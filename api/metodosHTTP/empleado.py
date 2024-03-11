@@ -28,3 +28,18 @@ def obtener_empleado(id_empleado, cursor):
         return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario, 'error': 'No hay error'})
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+
+def eliminar_empleado(id_empleado, cursor):
+    """Función DELETE para eliminar un empleado específico o todos los empleados de la base de datos"""
+    try:
+        # Se ejecuta una consulta SQL
+        if id_empleado == 'todos':
+            cursor.execute(
+            'DELETE FROM empleado')
+        else:
+            cursor.execute('DELETE FROM empleado WHERE idEmpleado = %s', (id_empleado,))
+        
+        return jsonify({'success': True, 'status': 200, 'message': 'Empleado eliminado', 'data': [], 'error': 'No hay error'})
+    
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500

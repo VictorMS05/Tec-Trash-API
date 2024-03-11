@@ -25,3 +25,15 @@ def obtener_recoleccion(id_recoleccion, cursor):
         return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario, 'error': 'No hay error'})
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+    
+def eliminar_recoleccion(id_recoleccion, cursor):
+    """Función DELETE para eliminar una recolección específica o todas las recolecciones de la base de datos"""
+    try:
+        if id_recoleccion == 'todos':
+            cursor.execute(
+            'DELETE FROM recoleccion')
+        else:
+            cursor.execute('DELETE FROM recoleccion WHERE idRecoleccion = %s', (id_recoleccion,))
+        return jsonify({'success': True, 'status': 200, 'message': 'Recoleccion eliminada', 'data': [], 'error': 'No hay error'})
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
