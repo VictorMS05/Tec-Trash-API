@@ -1,3 +1,3 @@
-# Tec-Trash
+# Tec-Trash API
 
-Este es un proyecto para la materia de ingeniería de software, con la finalidad de manejar un sistema de recolección, manejo y acopio de desechos tecnológicos con ayuda de una página web.
+Este es el repositorio oficial de la API de Tec-Trash, un proyecto realizado en el semestre enero-mayo del 2024 para la materia de ingeniería de software de la carrera de Ingenieria en Sistemas Computacionales del Instituto Tecnológico de Ciudad Valles, con la finalidad de manejar un sistema de recolección, manejo y acopio de desechos tecnológicos mediante el uso de una página web.

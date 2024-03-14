@@ -3,6 +3,8 @@ from flask import jsonify  # Se importa la clase Flask y la función jsonify
 from MySQLdb import OperationalError
 
 #! MÉTODOS HTTP PARA TABLA ENTREGA
+
+#* GET
 def obtener_entrega(id_entrega, cursor):
     """Función GET para obtener una entrega específica o todas las entregas de la base de datos"""
     try:
@@ -10,7 +12,7 @@ def obtener_entrega(id_entrega, cursor):
             cursor.execute(
             'SELECT idEntrega, idEmpresa, idEmpleado, costo, fechaEntrega FROM entrega')
         else:
-            cursor.execute('SELECT idEntrega, idEmpresa, idEmpleado, costo, fechaEntrega FROM entrega WHERE idEntrega = %s', (id_entrega,))
+            cursor.execute('SELECT idEntrega, idEmpresa, idEmpleado, costo, fechaRegistro, fechaEntrega FROM entrega WHERE idEntrega = %s', (id_entrega,))
         entregas = cursor.fetchall()
         diccionario = []
         for registro in entregas:
@@ -19,9 +21,20 @@ def obtener_entrega(id_entrega, cursor):
                 'idEmpresa': registro[1],
                 'idEmpleado': registro[2],
                 'costo': registro[3],
-                'fechaEntrega': registro[4]
+                'fechaRegistro': registro[4],
+                'fechaEntrega': registro[5]
             }
             diccionario.append(arreglo)
-        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario, 'error': 'No hay error'})
+        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
     except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+
+#* POST
+def registrar_entrega(body, cursor, conexion):
+    """Función POST para registrar una entrega en la base de datos"""
+    try:
+        cursor.execute('INSERT INTO entrega (idEmpresa, idEmpleado, costo, fechaRegistro, fechaEntrega) VALUES (%s, %s, %s, CURRENT_TIMESTAMP(), NULL)', (body['idEmpresa'].upper(), body['idEmpleado'].upper(), body['costo']))
+        conexion.connection.commit()
+        return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500

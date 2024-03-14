@@ -3,6 +3,8 @@ from flask import jsonify  # Se importa la clase Flask y la función jsonify
 from MySQLdb import OperationalError
 
 #! MÉTODOS HTTP PARA TABLA RECOLECCION
+
+#*GET
 def obtener_recoleccion(id_recoleccion, cursor):
     """Función GET para obtener una recolección específica o todas las recolecciones de la base de datos"""
     try:
@@ -22,6 +24,16 @@ def obtener_recoleccion(id_recoleccion, cursor):
                 'fechaRecoleccion': registro[4]
             }
             diccionario.append(arreglo)
-        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario, 'error': 'No hay error'})
+        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
     except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+
+#* POST
+def registrar_recoleccion(body, cursor, conexion):
+    """Función POST para registrar una recolección en la base de datos"""
+    try:
+        cursor.execute('INSERT INTO recoleccion (idEmpleado, pesoFinal, fechaRegistro, fechaRecoleccion) VALUES (%s, %s, CURRENT_TIMESTAMP(), NULL)', (body['idEmpleado'].upper(), body['pesoFinal']))
+        conexion.connection.commit()
+        return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500

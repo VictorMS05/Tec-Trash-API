@@ -3,6 +3,8 @@ from flask import jsonify  # Se importa la clase Flask y la función jsonify
 from MySQLdb import OperationalError
 
 #! MÉTODOS HTTP PARA TABLA EMPRESA
+
+#*GET
 def obtener_empresa(id_empresa, cursor):
     """Función GET para obtener una empresa específica o todas las empresas de la base de datos"""
     try:
@@ -32,6 +34,10 @@ def obtener_empresa(id_empresa, cursor):
             }
             diccionario.append(arreglo)  # Se agrega el arreglo al diccionario
             # Se retorna un objeto JSON con el diccionario obtenido
-        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario, 'error': 'No hay error'})
+        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
     except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+
+#* POST
+def registrar_empresa(body, cursor, conexion):
+    """Función POST para registrar una empresa en la base de datos"""    
