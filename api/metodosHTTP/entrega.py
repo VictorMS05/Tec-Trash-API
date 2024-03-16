@@ -39,3 +39,16 @@ def registrar_entrega(body, cursor, conexion):
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+
+#* DELETE
+def eliminar_entrega(id_entrega, cursor):
+    """Función DELETE para eliminar una entrega específica o todas las entregas de la base de datos"""
+    try:
+        if id_entrega == 'todos':
+            cursor.execute(
+            'DELETE FROM entrega')
+        else:
+            cursor.execute('DELETE FROM entrega WHERE idEntrega = %s', (id_entrega,))
+        return jsonify({'success': True, 'status': 200, 'message': 'Entrega eliminada', 'data': [], 'error': 'No hay error'})
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500

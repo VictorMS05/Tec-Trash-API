@@ -25,7 +25,7 @@ def post_1():
     """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla cliente"""
     cursor = conexion.connection.cursor()  # Se crea un cursor para interactuar con la base de datos
     return registrar_cliente(request.json, cursor, conexion)  # Se retorna el resultado de la función registrar_cliente
-#*DELETE
+#* DELETE
 @app.route('/cliente/<string:id_cliente>', methods = ['DELETE'])
 def delete_1(id_cliente):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla cliente"""
