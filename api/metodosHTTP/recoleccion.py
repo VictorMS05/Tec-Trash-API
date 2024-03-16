@@ -20,8 +20,9 @@ def obtener_recoleccion(id_recoleccion, cursor):
                 'idRecoleccion': registro[0],
                 'idEmpleado': registro[1],
                 'pesoFinal': registro[2],
-                'fechaRegistro': registro[3],
-                'fechaRecoleccion': registro[4]
+                'costoFinal': registro[3],
+                'fechaRegistro': registro[4],
+                'fechaRecoleccion': registro[5]
             }
             diccionario.append(arreglo)
         return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
@@ -32,7 +33,7 @@ def obtener_recoleccion(id_recoleccion, cursor):
 def registrar_recoleccion(body, cursor, conexion):
     """Función POST para registrar una recolección en la base de datos"""
     try:
-        cursor.execute('INSERT INTO recoleccion (idEmpleado, pesoFinal, fechaRegistro, fechaRecoleccion) VALUES (%s, %s, CURRENT_TIMESTAMP(), NULL)', (body['idEmpleado'].upper(), body['pesoFinal']))
+        cursor.execute('INSERT INTO recoleccion (idEmpleado, pesoFinal, costoFinal, fechaRegistro, fechaRecoleccion) VALUES (%s, %s, %s, CURRENT_TIMESTAMP(), NULL)', (body['idEmpleado'].upper(), body['pesoFinal'], body['costoFinal']))
         conexion.connection.commit()
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
     except OperationalError as e:

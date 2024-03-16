@@ -20,9 +20,10 @@ def obtener_entrega(id_entrega, cursor):
                 'idEntrega': registro[0],
                 'idEmpresa': registro[1],
                 'idEmpleado': registro[2],
-                'costo': registro[3],
-                'fechaRegistro': registro[4],
-                'fechaEntrega': registro[5]
+                'pesoFinal': registro[3],
+                'costo': registro[4],
+                'fechaRegistro': registro[5],
+                'fechaEntrega': registro[6]
             }
             diccionario.append(arreglo)
         return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
@@ -33,7 +34,7 @@ def obtener_entrega(id_entrega, cursor):
 def registrar_entrega(body, cursor, conexion):
     """Función POST para registrar una entrega en la base de datos"""
     try:
-        cursor.execute('INSERT INTO entrega (idEmpresa, idEmpleado, costo, fechaRegistro, fechaEntrega) VALUES (%s, %s, %s, CURRENT_TIMESTAMP(), NULL)', (body['idEmpresa'].upper(), body['idEmpleado'].upper(), body['costo']))
+        cursor.execute('INSERT INTO entrega (idEmpresa, idEmpleado, pesoFinal, costo, fechaRegistro, fechaEntrega) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP(), NULL)', (body['idEmpresa'].upper(), body['idEmpleado'].upper(), body['pesoFinal'], body['costo']))
         conexion.connection.commit()
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
     except OperationalError as e:

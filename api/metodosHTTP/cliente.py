@@ -27,8 +27,7 @@ def obtener_clientes(id_cliente, cursor):
                 'numeroExterior': registro[5],
                 'colonia': registro[6],
                 'codigoPostal': registro[7],
-                'telefono': registro[8],
-                'correo': registro[9]
+                'correo': registro[8]
             }
             diccionario.append(arreglo)  # Se agrega el arreglo al diccionario
             # Se retorna un objeto JSON con el diccionario obtenido
@@ -42,7 +41,7 @@ def registrar_cliente(body, cursor, conexion):
     try:
         # Se ejecuta una consulta SQL con parámetros
         contrasenia_encriptada = generate_password_hash(body['contrasenia'], method='pbkdf2:sha256')
-        cursor.execute('INSERT INTO cliente VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (body['idCliente'].upper(), body['nombre'].upper(), body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(), body['calle'].upper(), body['numeroExterior'], body['colonia'].upper(), body['codigoPostal'], body['telefono'], body['correo'], contrasenia_encriptada))
+        cursor.execute('INSERT INTO cliente VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (body['idCliente'], body['nombre'].upper(), body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(), body['calle'].upper(), body['numeroExterior'], body['colonia'].upper(), body['codigoPostal'], body['correo'], contrasenia_encriptada))
         conexion.connection.commit()  # Se confirma la transacción
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})  # Se retorna un objeto JSON con un mensaje de éxito
     except OperationalError as e:
