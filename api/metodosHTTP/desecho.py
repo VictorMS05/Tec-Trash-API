@@ -47,3 +47,18 @@ def registrar_desecho(body, cursor, conexion):
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)})
+
+#* DELETE
+def eliminar_desecho(id_desecho, cursor):
+    """Función DELETE para eliminar un desecho específico o todos los desechos de la base de datos"""
+    try:
+        if id_desecho == 'todos':
+            cursor.execute(
+            'DELETE FROM desecho')
+        else:
+            cursor.execute('DELETE FROM desecho WHERE idDesecho = %s', (id_desecho,))
+        
+        return jsonify({'success': True, 'status': 200, 'message': 'Desecho eliminado', 'data': [], 'error': 'No hay error'})
+    
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
