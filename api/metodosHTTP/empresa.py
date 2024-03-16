@@ -1,4 +1,4 @@
-from flask import jsonify  # Se importa la clase Flask y la función jsonify
+from flask import jsonify, request  # Se importa la clase Flask y la función jsonify
 # Se importa la clase OperationalError de MySQLdb
 from MySQLdb import OperationalError
 
@@ -45,6 +45,20 @@ def eliminar_empresa(id_empresa, cursor):
             'DELETE FROM empresa')
         else:
             cursor.execute('DELETE FROM empresa WHERE idEmpresa = %s', (id_empresa,))
-        return jsonify({'success': True, 'status': 200, 'message': 'Empresa eliminada', 'data': [], 'error': 'No hay error'})
+        return jsonify({'success': True, 'status': 200, 'message': 'Empresa eliminada', 'data': []})
     except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+    
+def agregar_empresa(cursor, conexion):
+    registro = request.json
+    try:
+        cursor.execute("INSERT INTO empresa (idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, estado, telefono, correo, contrasenia, nombreEncargado, apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}')".format(registro['idEmpresa'], registro['nombre'], registro['calle'], registro['numeroExterior'], registro['colonia'], registro['ciudad'], registro['estado'],registro['telefono'], registro['correo'], registro['contrasenia'], registro['nombreEncargado'], registro['apellidoPaternoE'], registro['apellidoMaternoE'], registro['esEntrega'], registro['pesoEstablecido']))
+        
+        conexion.connection.commit()
+        
+        return jsonify({'success': True, 'status': 200, 'message': 'Empresa registrada'})
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+    
+    
+    
