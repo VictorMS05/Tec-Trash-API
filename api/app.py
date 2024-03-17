@@ -2,9 +2,9 @@ from flask import Flask, request # Se importa el diccionario de configuraciones
 from flask_mysqldb import MySQL # Se importa la clase MySQL de flask_mysqldb
 from config import diccionario_de_configuraciones # Se importa el diccionario de configuraciones
 from manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, error_interno_del_servidor # Se importan las funciones para manejar errores
-from metodosHTTP.cliente import obtener_clientes, registrar_cliente, eliminar_clientes
+from metodosHTTP.cliente import obtener_clientes, registrar_cliente, eliminar_clientes, actualizar_cliente
 from metodosHTTP.empleado import obtener_empleado, registrar_empleado, eliminar_empleado
-from metodosHTTP.empresa import obtener_empresa, registrar_empresa, eliminar_empresa
+from metodosHTTP.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa
 from metodosHTTP.desecho import obtener_desecho, registrar_desecho, eliminar_desecho
 from metodosHTTP.entrega import obtener_entrega, registrar_entrega, eliminar_entrega
 from metodosHTTP.recoleccion import obtener_recoleccion, registrar_recoleccion, eliminar_recoleccion
@@ -31,6 +31,12 @@ def delete_1(id_cliente):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla cliente"""
     cursor = conexion.connection.cursor() # Se crea un cursor para interactuar con la base de datos
     return eliminar_clientes(id_cliente, cursor)
+#* PUT
+@app.route('/cliente/<string:id_cliente>', methods = ['PUT'])  # Se define la ruta de la aplicación
+def put_1(id_cliente):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla empresa"""
+    cursor = conexion.connection.cursor()
+    return actualizar_cliente(id_cliente, cursor, conexion)
 
 #! RUTAS PARA LA TABLA EMPLEADO
 #* GET
@@ -62,15 +68,21 @@ def get_3(id_empresa):
 #* POST
 @app.route('/empresa', methods = ['POST'])  # Se define la ruta de la aplicación
 def post_3():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla empresa"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla empresa"""
     cursor = conexion.connection.cursor()
     return registrar_empresa(cursor, conexion)
+#* PUT
+@app.route('/empresa/<string:id_empresa>', methods = ['PUT'])  # Se define la ruta de la aplicación
+def put_3(id_empresa):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla empresa"""
+    cursor = conexion.connection.cursor()
+    return actualizar_empresa(id_empresa, cursor, conexion)
 #* DELETE
 @app.route('/empresa/<string:id_empresa>', methods = ['DELETE'])  # Se define la ruta de la aplicación
 def delete_3(id_empresa):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla empresa"""
     cursor = conexion.connection.cursor()
-    return eliminar_empresa(id_empresa, cursor)
+    return eliminar_empresa(id_empresa, cursor, conexion)
 
 #! RUTAS PARA LA TABLA DESECHO
 #* GET
