@@ -1,4 +1,4 @@
-from flask import jsonify  # Se importa la clase Flask y la función jsonify
+from flask import jsonify, request  # Se importa la clase Flask y la función jsonify
 # Se importa la clase OperationalError de MySQLdb
 from MySQLdb import OperationalError
 from werkzeug.security import generate_password_hash
@@ -43,19 +43,29 @@ def registrar_empleado(body, cursor, conexion):
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})  # Se retorna un objeto JSON con un mensaje de éxito
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)})
+    
+#*PUT
+def actualizar_empleado(id_empleado, cursor, conexion):
+    try:
+        empleado = request.json
+        contrasenia_encriptada = generate_password_hash(empleado['contrasenia'], method='pbkdf2:sha256')
+        cursor.execute('SELECT nombre, apellidoPaterno, apellidoMaterno, telefono, correo, contrasenia FROM empleado WHERE idEmpleado = %s', (id_empleado,))
+        if cursor.fetchone() != None:
+            cursor.execute('UPDATE empleado SET nombre = %s, apellidoPaterno = %s, apellidoMaterno = %s, telefono = %s, correo = %s, contrasenia = %s WHERE idEmpleado = %s', (empleado['nombre'].upper(), empleado['apellidoPaterno'].upper(), empleado['apellidoMaterno'].upper(), empleado['telefono'],empleado['correo'].upper(), contrasenia_encriptada, id_empleado,))
+            conexion.connection.commit()
+            return jsonify({'success': True, 'status': 202, 'message': 'Actualización exitosa', 'data': empleado})
+        else:
+            return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Solicitud incorrecta', 'details': 'La solicitud no pudo ser procesada por el servidor'}}) # Se retorna un objeto JSON con un error 500    
+    except OperationalError as e:
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
 
 #* DELETE
-def eliminar_empleado(id_empleado, cursor):
+def eliminar_empleado(id_empleado, cursor, conexion):
     """Función DELETE para eliminar un empleado específico o todos los empleados de la base de datos"""
     try:
         # Se ejecuta una consulta SQL
-        if id_empleado == 'todos':
-            cursor.execute(
-            'DELETE FROM empleado')
-        else:
-            cursor.execute('DELETE FROM empleado WHERE idEmpleado = %s', (id_empleado,))
-        
-        return jsonify({'success': True, 'status': 200, 'message': 'Empleado eliminado', 'data': [], 'error': 'No hay error'})
-    
+        cursor.execute('DELETE FROM empleado WHERE idEmpleado = %s', (id_empleado,))
+        conexion.connection.commit()
+        return jsonify({'success': True, 'status': 200, 'message': 'Empleado eliminado'})
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500

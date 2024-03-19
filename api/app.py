@@ -2,11 +2,11 @@ from flask import Flask, request # Se importa el diccionario de configuraciones
 from flask_mysqldb import MySQL # Se importa la clase MySQL de flask_mysqldb
 from config import diccionario_de_configuraciones # Se importa el diccionario de configuraciones
 from manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, error_interno_del_servidor # Se importan las funciones para manejar errores
-from metodosHTTP.cliente import obtener_clientes, registrar_cliente, eliminar_clientes, actualizar_cliente
-from metodosHTTP.empleado import obtener_empleado, registrar_empleado, eliminar_empleado
+from metodosHTTP.cliente import obtener_clientes, registrar_cliente, eliminar_clientes
+from metodosHTTP.empleado import obtener_empleado, registrar_empleado, eliminar_empleado, actualizar_empleado
 from metodosHTTP.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa
 from metodosHTTP.desecho import obtener_desecho, registrar_desecho, eliminar_desecho
-from metodosHTTP.entrega import obtener_entrega, registrar_entrega, eliminar_entrega
+from metodosHTTP.entrega import obtener_entrega, registrar_entrega, eliminar_entrega, actualizar_entrega
 from metodosHTTP.recoleccion import obtener_recoleccion, registrar_recoleccion, eliminar_recoleccion
 
 app = Flask(__name__)  # Se crea una instancia de Flask
@@ -31,12 +31,7 @@ def delete_1(id_cliente):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla cliente"""
     cursor = conexion.connection.cursor() # Se crea un cursor para interactuar con la base de datos
     return eliminar_clientes(id_cliente, cursor)
-#* PUT
-@app.route('/cliente/<string:id_cliente>', methods = ['PUT'])  # Se define la ruta de la aplicación
-def put_1(id_cliente):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla empresa"""
-    cursor = conexion.connection.cursor()
-    return actualizar_cliente(id_cliente, cursor, conexion)
+
 
 #! RUTAS PARA LA TABLA EMPLEADO
 #* GET
@@ -51,12 +46,20 @@ def post_2():
     """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla empleado"""
     cursor = conexion.connection.cursor()
     return registrar_empleado(request.json, cursor, conexion)
+#* PUT
+@app.route('/empleado/<string:id_empleado>', methods = ['PUT'])  # Se define la ruta de la aplicación
+def put_2(id_empleado):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla empleado"""
+    cursor = conexion.connection.cursor()
+    return actualizar_empleado(id_empleado, cursor, conexion)
 #* DELETE
 @app.route('/empleado/<string:id_empleado>', methods = ['DELETE'])  # Se define la ruta de la aplicación
 def delete_2(id_empleado):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla empleado"""
     cursor = conexion.connection.cursor()
-    return eliminar_empleado(id_empleado, cursor)
+    return eliminar_empleado(id_empleado, cursor, conexion)
+
+
 
 #! RUTAS PARA LA TABLA EMPRESA
 #* GET
@@ -138,12 +141,18 @@ def post_6():
     """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla entrega"""
     cursor = conexion.connection.cursor()
     return registrar_entrega(request.json, cursor, conexion)
+#* PUT
+@app.route('/entrega/<string:id_entrega>', methods = ['PUT'])  # Se define la ruta de la aplicación
+def put_6(id_entrega):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla entrega"""
+    cursor = conexion.connection.cursor()
+    return actualizar_entrega(id_entrega, cursor, conexion)
 #* DELETE
 @app.route('/entrega/<string:id_entrega>', methods = ['DELETE'])  # Se define la ruta de la aplicación
 def delete_6(id_entrega):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla entrega"""
     cursor = conexion.connection.cursor()
-    return eliminar_entrega(id_entrega, cursor)
+    return eliminar_entrega(id_entrega, cursor, conexion)
 
 #! EJECUCIÓN DE LA APLICACIÓN
 if __name__ == '__main__':  # Si la instancia de Flask es la principal
