@@ -167,6 +167,7 @@ def delete_6(id_entrega):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla entrega"""
     cursor = conexion.connection.cursor()
     return eliminar_entrega(id_entrega, cursor, conexion)
+    return eliminar_entrega(id_entrega, cursor, conexion)
 
 #! EJECUCIÓN DE LA APLICACIÓN
 if __name__ == '__main__':  # Si la instancia de Flask es la principal
