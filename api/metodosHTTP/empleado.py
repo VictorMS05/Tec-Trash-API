@@ -44,6 +44,10 @@ def registrar_empleado(body, cursor, conexion):
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)})
 
+#* PUT
+def actualizar_empleado(id_empleado, cursor, conexion):
+    """Función PUT para actualizar un empleado específico en la base de datos"""
+
 #* DELETE
 def eliminar_empleado(id_empleado, cursor):
     """Función DELETE para eliminar un empleado específico o todos los empleados de la base de datos"""

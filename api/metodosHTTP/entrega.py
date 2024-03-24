@@ -40,6 +40,10 @@ def registrar_entrega(body, cursor, conexion):
     except OperationalError as e:
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
 
+#* PUT
+def actualizar_entrega(id_entrega, body, cursor, conexion):
+    """Función PUT para actualizar una entrega específica en la base de datos"""
+
 #* DELETE
 def eliminar_entrega(id_entrega, cursor):
     """Función DELETE para eliminar una entrega específica o todas las entregas de la base de datos"""

@@ -1,6 +1,7 @@
-from flask import jsonify  # Se importa la clase Flask y la función jsonify
+from datetime import datetime
+from flask import jsonify, request  # Se importa la clase Flask y la función jsonify
 # Se importa la clase OperationalError de MySQLdb
-from MySQLdb import OperationalError
+from MySQLdb import OperationalError, IntegrityError
 
 #! MÉTODOS HTTP PARA TABLA DESECHO
 
@@ -10,7 +11,7 @@ def obtener_desecho(id_desecho, cursor):
     try:
         if id_desecho == 'todos':
             cursor.execute(
-            'SELECT idDesecho, idCliente, idRecoleccion, idEntrega, nombre, modelo, marca, peso, color, estatusFuncional, fechaRegistro, fechaFinal, pago, estatusRecoleccion FROM desecho')
+            'SELECT idDesecho, idCliente, idRecoleccion, idEntrega, nombre, modelo, marca, peso, color, estatusFuncional, fechaRegistro, fechaFinal, pago, estatusRecoleccion, estatusEntrega FROM desecho')
         else:
             cursor.execute('SELECT idDesecho, idRecoleccion, idEntrega, nombre, modelo, marca peso, color, estatusFuncional, fechaRegistro, fechaFinal, pago, estatusRecoleccion, estatusEntrega FROM desecho WHERE idDesecho = %s', (id_desecho,))
         desechos = cursor.fetchall()
@@ -36,29 +37,45 @@ def obtener_desecho(id_desecho, cursor):
             diccionario.append(arreglo)
         return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
     except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}}) # Se retorna un objeto JSON con un error 500
 
 #* POST
 def registrar_desecho(body, cursor, conexion):
     """Función POST para registrar un desecho en la base de datos"""
     try:
-        cursor.execute('INSERT INTO desecho (idCliente, idRecoleccion, idEntrega, nombre, modelo, marca, peso, color, estatusFuncional, fechaRegistro, fechaFinal, pago, estatusRecoleccion) VALUES (%s, NULL, NULL, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP(), %s, %s, "No recolectado", "No entregado")', (body['idCliente'].upper(), body['nombre'].upper(), body['modelo'].upper(), body['marca'].upper(), body['peso'], body['color'].upper(), body['estatusFuncional'], body['fechaFinal'], body['pago']))
+        cursor.execute('INSERT INTO desecho (idCliente, idRecoleccion, idEntrega, nombre, modelo, marca, peso, color, estatusFuncional, fechaRegistro, pago, estatusRecoleccion, estatusEntrega) VALUES (%s, NULL, NULL, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP(), %s, "NO RECOLECTADO", "NO ENTREGADO")', (body['idCliente'], body['nombre'].upper(), body['modelo'].upper(), body['marca'].upper(), body['peso'], body['color'].upper(), body['estatusFuncional'], body['pago']))
         conexion.connection.commit()
-        return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
-    except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)})
+        cursor.execute('SELECT * FROM desecho WHERE idCliente = %s AND nombre = %s AND modelo = %s AND marca = %s AND peso = %s AND color = %s AND estatusFuncional = %s AND pago = %s', (body['idCliente'], body['nombre'].upper(), body['modelo'].upper(), body['marca'].upper(), body['peso'], body['color'].upper(), body['estatusFuncional'], body['pago']))
+        return jsonify({'success': True, 'status': 201, 'message': 'El desecho se ha registrado exitosamente', 'data': {'idCliente': body['idCliente'], 'nombre': body['nombre'].upper(), 'modelo': body['modelo'].upper(), 'marca': body['marca'].upper(), 'peso': body['peso'], 'color': body['color'].upper(), 'estatusFuncional': body['estatusFuncional'], 'fechaRegistro': datetime.now(), 'pago': body['pago'], 'estatusRecoleccion': 'NO RECOLECTADO', 'estatusEntrega': 'NO ENTREGADO'}})
+    except IntegrityError as e:
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}}) # Se retorna un objeto JSON con un error 500
+
+#* PUT
+def actualizar_desecho(id_desecho, cursor, conexion):
+    """Función PUT para actualizar un desecho específico en la base de datos"""
+    try:
+        desecho = request.json
+        cursor.execute('SELECT idDesecho FROM desecho WHERE idDesecho = %s', (id_desecho,))
+        if cursor.fetchone() is not None:
+            cursor.execute('UPDATE desecho SET idCliente = %s, nombre = %s, modelo = %s, marca = %s, peso = %s, color = %s, estatusFuncional = %s, pago = %s WHERE idDesecho = %s', (desecho['idCliente'], desecho['nombre'].upper(), desecho['modelo'].upper(), desecho['marca'].upper(), desecho['peso'], desecho['color'].upper(), desecho['estatusFuncional'], desecho['pago'], id_desecho,))
+            conexion.connection.commit()
+            cursor.execute('SELECT idCliente, nombre, modelo, marca, peso, color, estatusFuncional, pago FROM desecho WHERE idDesecho = %s', (id_desecho,))
+            return jsonify({'success': True, 'status': 200, 'message': 'El desecho se ha actualizado exitosamente', 'data': {'idCliente': desecho['idCliente'], 'nombre': desecho['nombre'].upper(), 'modelo': desecho['modelo'].upper(), 'marca': desecho['marca'].upper(), 'peso': desecho['peso'], 'color': desecho['color'].upper(), 'estatusFuncional': desecho['estatusFuncional'], 'pago': desecho['pago']}})
+        else:
+            return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Desecho no encontrado', 'details': 'No se encontró el desecho en la base de datos'}}) # Se retorna un objeto JSON con un error 404
+    except IntegrityError as e:
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}}) # Se retorna un objeto JSON con un error 500
 
 #* DELETE
-def eliminar_desecho(id_desecho, cursor):
+def eliminar_desecho(id_desecho, cursor, conexion):
     """Función DELETE para eliminar un desecho específico o todos los desechos de la base de datos"""
     try:
-        if id_desecho == 'todos':
-            cursor.execute(
-            'DELETE FROM desecho')
-        else:
+        cursor.execute('SELECT idDesecho FROM desecho WHERE idDesecho = %s', (id_desecho,))
+        if cursor.fetchone() is not None:
             cursor.execute('DELETE FROM desecho WHERE idDesecho = %s', (id_desecho,))
-        
-        return jsonify({'success': True, 'status': 200, 'message': 'Desecho eliminado', 'data': [], 'error': 'No hay error'})
-    
+            conexion.connection.commit()
+            return jsonify({'success': True, 'status': 200, 'message': f'El desecho {id_desecho} se ha eliminado exitosamente'})  # Se retorna un objeto JSON con un mensaje de éxito
+        else:
+            return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Desecho no encontrado', 'details': f'El desecho {id_desecho} no existe'}}) # Se retorna un objeto JSON con un error 404
     except OperationalError as e:
-        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'data': [], 'error': str(e)}) # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}}) # Se retorna un objeto JSON con un error 500
