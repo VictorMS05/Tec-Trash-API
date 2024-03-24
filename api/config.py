@@ -1,3 +1,5 @@
+"""Módulo de la configuración de la aplicación"""
+
 class DevelopmentConfig(): # Clase de configuración para desarrollo
     DEBUG = True
     MYSQL_HOST = 'localhost'
