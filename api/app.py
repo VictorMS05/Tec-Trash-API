@@ -4,12 +4,12 @@ from flask import Flask, request # Se importa el diccionario de configuraciones
 from flask_mysqldb import MySQL # Se importa la clase MySQL de flask_mysqldb
 from config import diccionario_de_configuraciones # Se importa el diccionario de configuraciones
 from manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, error_interno_del_servidor # Se importan las funciones para manejar errores
-from vistas.cliente import obtener_clientes, registrar_cliente, actualizar_cliente, eliminar_clientes
-from vistas.empleado import obtener_empleado, registrar_empleado, actualizar_empleado, eliminar_empleado
-from vistas.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa
-from vistas.desecho import obtener_desecho, registrar_desecho, actualizar_desecho, eliminar_desecho
-from vistas.recoleccion import obtener_recoleccion, registrar_recoleccion, actualizar_recoleccion, eliminar_recoleccion
-from vistas.entrega import obtener_entrega, registrar_entrega, actualizar_entrega, eliminar_entrega
+from views.cliente import obtener_clientes, registrar_cliente, actualizar_cliente, eliminar_clientes
+from views.empleado import obtener_empleado, registrar_empleado, actualizar_empleado, eliminar_empleado
+from views.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa
+from views.desecho import obtener_desecho, registrar_desecho, actualizar_desecho, eliminar_desecho
+from views.recoleccion import obtener_recoleccion, registrar_recoleccion, actualizar_recoleccion, eliminar_recoleccion
+from views.entrega import obtener_entrega, registrar_entrega, actualizar_entrega, eliminar_entrega
 
 app = Flask(__name__)  # Se crea una instancia de Flask
 conexion = MySQL(app) # Se crea una instancia de MySQL con la configuración de la aplicación
