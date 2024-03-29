@@ -20,7 +20,7 @@ def obtener_clientes(id_cliente, cursor):
                 'SELECT idCliente, nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento, sexo, estadoCivil, calle, numeroExterior, numeroInterior, colonia, codigoPostal, referencia, correo FROM cliente')
         else:  # Si se recibe un id
             # Se ejecuta una consulta SQL con un parámetro
-            cursor.execute('SELECT idCliente, nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento, sexo, estadoCivil, calle, numeroExterior, numeroInterior, colonia, codigoPostal, referencia, correo FROM cliente WHERE idCliente = %s', (id_cliente,))
+            cursor.execute(f'SELECT idCliente, nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento, sexo, estadoCivil, calle, numeroExterior, numeroInterior, colonia, codigoPostal, referencia, correo FROM cliente WHERE idCliente = {id_cliente}')
         clientes = cursor.fetchall()  # Se obtienen todos los registros de la consulta
         diccionario = []  # Se crea un diccionario vacío
         for registro in clientes:  # Se recorren los registros obtenidos
@@ -50,9 +50,10 @@ def obtener_clientes(id_cliente, cursor):
 # * POST
 
 
-def registrar_cliente(body, cursor, conexion):
+def registrar_cliente(cursor, conexion):
     """Función POST para registrar un cliente en la base de datos"""
     try:
+        body = request.json  # Se obtiene el body de la petición
         # Se ejecuta una consulta SQL con parámetros
         contrasenia_encriptada = generate_password_hash(
             body['contrasenia'], method='pbkdf2:sha256')
@@ -61,9 +62,15 @@ def registrar_cliente(body, cursor, conexion):
         conexion.connection.commit()  # Se confirma la transacción
         # Se retorna un objeto JSON con un mensaje de éxito
         return jsonify({'success': True, 'status': 201, 'message': 'El cliente se ha registrado exitosamente', 'data': {'nombre': body['nombre'].upper(), 'apellidoPaterno': body['apellidoPaterno'].upper(), 'apellidoMaterno': body['apellidoMaterno'].upper(), 'fechaNacimiento': body['fechaNacimiento'], 'sexo': body['sexo'].upper(), 'estadoCivil': body['estadoCivil'].upper(), 'calle': body['calle'].upper(), 'numeroExterior': body['numeroExterior'], 'numeroInterior': body['numeroInterior'], 'colonia': body['colonia'].upper(), 'codigoPostal': body['codigoPostal'], 'referencia': body['referencia'].upper(), 'telefono': body['telefono'], 'correo': body['correo']}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
 
 # * PUT
 
@@ -71,34 +78,38 @@ def registrar_cliente(body, cursor, conexion):
 def actualizar_cliente(id_cliente, cursor, conexion):
     """Función PUT para actualizar un cliente específico en la base de datos"""
     try:
-        cliente = request.json
-        contrasenia_encriptada = generate_password_hash(
-            cliente['contrasenia'], method='pbkdf2:sha256')
+        body = request.json  # Se obtiene el body de la petición
         cursor.execute(
-            'SELECT idCliente FROM cliente WHERE idCliente = %s', (id_cliente,))
+            f'SELECT idCliente FROM cliente WHERE idCliente = {id_cliente}')
         if cursor.fetchone() is not None:
-            cursor.execute('UPDATE cliente SET nombre = %s, apellidoPaterno = %s, apellidoMaterno = %s, fechaNacimiento = %s, sexo = %s, estadoCivil = %s, calle = %s, numeroExterior = %s, numeroInterior = %s, colonia = %s, codigoPostal = %s, referencia = %s, correo = %s, contrasenia = %s WHERE idCliente = %s', (cliente['nombre'].upper(), cliente['apellidoPaterno'].upper(
-            ), cliente['apellidoMaterno'].upper(), cliente['fechaNacimiento'], cliente['sexo'].upper(), cliente['estadoCivil'].upper(), cliente['calle'].upper(), cliente['numeroExterior'], cliente['numeroInterior'], cliente['colonia'].upper(), cliente['codigoPostal'], cliente['referencia'].upper(), cliente['correo'], contrasenia_encriptada, id_cliente,))
-            if cliente['telefono'] != id_cliente:
-                cursor.execute(
-                    'UPDATE cliente SET idCliente = %s WHERE idCliente = %s', (cliente['telefono'], id_cliente,))
+            cursor.execute('UPDATE cliente SET nombre = %s, apellidoPaterno = %s, apellidoMaterno = %s, fechaNacimiento = %s, sexo = %s, estadoCivil = %s, calle = %s, numeroExterior = %s, numeroInterior = %s, colonia = %s, codigoPostal = %s, referencia = %s, correo = %s WHERE idCliente = %s', (body['nombre'].upper(), body['apellidoPaterno'].upper(
+            ), body['apellidoMaterno'].upper(), body['fechaNacimiento'], body['sexo'].upper(), body['estadoCivil'].upper(), body['calle'].upper(), body['numeroExterior'], body['numeroInterior'], body['colonia'].upper(), body['codigoPostal'], body['referencia'].upper(), body['correo'], id_cliente,))
+            telefono = id_cliente
+            if body['telefono'] != id_cliente and body['telefono'] != '':
+                cursor.execute('UPDATE cliente SET idCliente = %s WHERE idCliente = %s', (body['telefono'], id_cliente,))
+                telefono = body['telefono']
             conexion.connection.commit()
-            return jsonify({'success': True, 'status': 200, 'message': 'El cliente se ha actualizado exitosamente', 'data': {'nombre': cliente['nombre'].upper(), 'apellidoPaterno': cliente['apellidoPaterno'].upper(), 'apellidoMaterno': cliente['apellidoMaterno'].upper(), 'fechaNacimiento': cliente['fechaNacimiento'], 'sexo': cliente['sexo'].upper(), 'estadoCivil': cliente['estadoCivil'].upper(), 'calle': cliente['calle'].upper(), 'numeroExterior': cliente['numeroExterior'], 'numeroInterior': cliente['numeroInterior'], 'colonia': cliente['colonia'].upper(), 'codigoPostal': cliente['codigoPostal'], 'referencia': cliente['referencia'].upper(), 'telefono': cliente['telefono'], 'correo': cliente['correo']}})
-        else:
-            # Se retorna un objeto JSON con un error 404
-            return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Cliente no encontrado', 'details': f'No se encontró el cliente {id_cliente} en la base de datos'}})
+            return jsonify({'success': True, 'status': 200, 'message': 'El cliente se ha actualizado exitosamente', 'data': {'nombre': body['nombre'].upper(), 'apellidoPaterno': body['apellidoPaterno'].upper(), 'apellidoMaterno': body['apellidoMaterno'].upper(), 'fechaNacimiento': body['fechaNacimiento'], 'sexo': body['sexo'].upper(), 'estadoCivil': body['estadoCivil'].upper(), 'calle': body['calle'].upper(), 'numeroExterior': body['numeroExterior'], 'numeroInterior': body['numeroInterior'], 'colonia': body['colonia'].upper(), 'codigoPostal': body['codigoPostal'], 'referencia': body['referencia'].upper(), 'telefono': telefono, 'correo': body['correo']}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Cliente no encontrado', 'details': f'No se encontró el cliente {id_cliente} en la base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
 
 # * DELETE
 
 
-def eliminar_clientes(id_cliente, cursor, conexion):
+def eliminar_cliente(id_cliente, cursor, conexion):
     """Función DELETE para eliminar un cliente específico o todos los clientes de la base de datos"""
     try:
         cursor.execute(
-            'SELECT idCliente FROM cliente WHERE idCliente = %s', (id_cliente,))
+            f'SELECT idCliente FROM cliente WHERE idCliente = {id_cliente}')
         if cursor.fetchone() is not None:
             # Se ejecuta una consulta SQL
             cursor.execute(
@@ -106,9 +117,39 @@ def eliminar_clientes(id_cliente, cursor, conexion):
             conexion.connection.commit()
             # Se retorna un objeto JSON con un mensaje de éxito
             return jsonify({'success': True, 'status': 200, 'message': f'El cliente {id_cliente} se ha dado de baja exitosamente'})
-        else:
-            # Se retorna un objeto JSON con un error 404
-            return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Cliente no encontrado', 'details': f'El cliente {id_cliente} no existe'}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Cliente no encontrado', 'details': f'El cliente {id_cliente} no existe'}})
+    except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
+
+# * PATCH
+
+
+def cambiar_contrasenia_cliente(id_cliente, cursor, conexion):
+    """Función PATCH para cambiar la contraseña de un cliente específico en la base de datos"""
+    try:
+        body = request.json
+        cursor.execute(f'SELECT idCliente FROM cliente WHERE idCliente = {id_cliente}')
+        if cursor.fetchone() is not None:
+            if 'contrasenia' in body:
+                contrasenia_encriptada = generate_password_hash(body['contrasenia'], method='pbkdf2:sha256')
+                cursor.execute('UPDATE cliente SET contrasenia = %s WHERE idCliente = %s', (contrasenia_encriptada, id_cliente,))
+                conexion.connection.commit()
+                return jsonify({'success': True, 'status': 200, 'message': f'Se ha actualizado la contraseña del cliente {id_cliente} exitosamente'})
+            # Se retorna un objeto JSON con un error 400
+            return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': 'Falta la clave contrasenia en el body de la petición'}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Cliente no encontrado', 'details': f'No se encontró el cliente {id_cliente} en la base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
+    except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
         return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})

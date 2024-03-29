@@ -20,6 +20,12 @@ def metodo_no_permitido(error):  # Función para manejar errores 405
     print(error)
     return jsonify({'error': {'code': 405, 'type': 'Error del cliente', 'message': 'Método no permitido', 'details': 'El método no está permitido para la URL solicitada'}}) # Se retorna un objeto JSON con un error 405
 
+#* Función para manejar errores 415
+def tipo_de_medio_no_soportado(error):  # Función para manejar errores 415
+    """Función para manejar errores 415"""
+    print(error)
+    return jsonify({'error': {'code': 415, 'type': 'Error del cliente', 'message': 'Tipo de medio no soportado', 'details': 'No se intentaron cargar datos JSON porque el Content-Type de la solicitud no era application/json'}})  # Se retorna un objeto JSON con un error 415
+
 #* Función para manejar errores 500
 def error_interno_del_servidor(error):  # Función para manejar errores 500
     """Función para manejar errores 500"""

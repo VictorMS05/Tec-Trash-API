@@ -1,3 +1,4 @@
 *entorno_virtual
 *api/__pycache__/
+*api/errors/__pycache__/
 *api/views/__pycache__/

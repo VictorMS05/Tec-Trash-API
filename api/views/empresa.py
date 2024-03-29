@@ -4,6 +4,7 @@
 from flask import jsonify, request
 # Se importa la clase OperationalError de MySQLdb
 from MySQLdb import OperationalError, IntegrityError
+from werkzeug.security import generate_password_hash
 
 #! MÉTODOS HTTP PARA TABLA EMPRESA
 
@@ -92,6 +93,35 @@ def eliminar_empresa(id_empresa, cursor, conexion):
             'DELETE FROM empresa WHERE idEmpresa = %s', (id_empresa,))
         conexion.connection.commit()
         return jsonify({'success': True, 'status': 200, 'message': 'Empresa eliminada'})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
+
+# * PATCH
+
+
+def cambiar_contrasenia_empresa(id_empresa, cursor, conexion):
+    """Función PATCH para cambiar la contraseña de una empresa específica en la base de datos"""
+    try:
+        body = request.json['contrasenia']
+        cursor.execute(
+            f'SELECT idEmpresa FROM empresa WHERE idEmpresa = {id_empresa}')
+        if cursor.fetchone() is not None:
+            if 'contrasenia' in body:
+                contrasenia_encriptada = generate_password_hash(body['contrasenia'], method='pbkdf2:sha256')
+                cursor.execute('UPDATE empresa SET contrasenia = %s WHERE idEmpresa = %s', (contrasenia_encriptada, id_empresa,))
+                conexion.connection.commit()
+                return jsonify({'success': True, 'status': 200, 'message': 'Contraseña actualizada'})
+            # Se retorna un objeto JSON con un error 400
+            return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición incorrecta', 'details': 'Falta la clave contrasenia en el body de la petición'}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Empresa no encontrada', 'details': f'No se encontró la empresa {id_empresa} en la base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
+    except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
         return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})

@@ -42,9 +42,10 @@ def obtener_empleado(id_empleado, cursor):
 # * POST
 
 
-def registrar_empleado(body, cursor, conexion):
+def registrar_empleado(cursor, conexion):
     """Función POST para registrar un empleado en la base de datos"""
     try:
+        body = request.json  # Se obtiene el cuerpo de la petición
         contrasenia_encriptada = generate_password_hash(
             body['contrasenia'], method='pbkdf2:sha256')
         # Se ejecuta una consulta SQL con parámetros
@@ -94,3 +95,31 @@ def eliminar_empleado(id_empleado, cursor, conexion):
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
         return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
+
+# * PATCH
+
+
+def cambiar_contrasenia_empleado(id_empleado, cursor, conexion):
+    """Función PATCH para cambiar la contraseña de un empleado específico en la base de datos"""
+    try:
+        body = request.json
+        cursor.execute(f'SELECT idEmpleado FROM empleado WHERE idEmpleado = {id_empleado}')
+        if cursor.fetchone() is not None:
+            if 'contrasenia' in body:
+                contrasenia_encriptada = generate_password_hash(body['contrasenia'], method='pbkdf2:sha256')
+                cursor.execute('UPDATE empleado SET contrasenia = %s WHERE idEmpleado = %s', (contrasenia_encriptada, id_empleado,))
+                conexion.connection.commit()
+                return jsonify({'success': True, 'status': 200, 'message': f'Se ha actualizado la contraseña del empleado {id_empleado} exitosamente'})
+            # Se retorna un objeto JSON con un error 400
+            return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición incorrecta', 'details': 'Falta la clave contrasenia en el body de la petición'}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Empleado no encontrado', 'details': f'No se encontró el empleado {id_empleado} en la base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
+    except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)})
