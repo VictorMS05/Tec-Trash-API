@@ -17,10 +17,10 @@ def obtener_empleado(id_empleado, cursor):
         # Se ejecuta una consulta SQL
         if id_empleado == 'todos':
             cursor.execute(
-                'SELECT idEmpleado, nombre, apellidoPaterno, apellidoMaterno, telefono, correo FROM empleado')
+                'SELECT * FROM empleado')
         else:
             cursor.execute(
-                'SELECT idEmpleado, nombre, apellidoPaterno, apellidoMaterno, telefono, correo FROM empleado WHERE idEmpleado = %s', (id_empleado,))
+                'SELECT * FROM empleado WHERE idEmpleado = %s', (id_empleado,))
         empleados = cursor.fetchall()  # Se obtienen todos los registros de la consulta
         diccionario = []  # Se crea un diccionario vacío
         for registro in empleados:  # Se recorren los registros obtenidos
@@ -30,7 +30,8 @@ def obtener_empleado(id_empleado, cursor):
                 'apellidoPaterno': registro[2],
                 'apellidoMaterno': registro[3],
                 'telefono': registro[4],
-                'correo': registro[5]
+                'correo': registro[5],
+                'esAdministrador': registro[6]
             }
             diccionario.append(arreglo)  # Se agrega el arreglo al diccionario
             # Se retorna un objeto JSON con el diccionario obtenido
@@ -49,8 +50,8 @@ def registrar_empleado(cursor, conexion):
         contrasenia_encriptada = generate_password_hash(
             body['contrasenia'], method='pbkdf2:sha256')
         # Se ejecuta una consulta SQL con parámetros
-        cursor.execute('INSERT INTO empleado VALUES (%s, %s, %s, %s, %s, %s, %s)', (body['idEmpleado'].upper(), body['nombre'].upper(
-        ), body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(), body['telefono'], body['correo'], contrasenia_encriptada))
+        cursor.execute('INSERT INTO empleado VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (body['idEmpleado'].upper(), body['nombre'].upper(
+        ), body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(), body['telefono'], body['correo'].upper(), contrasenia_encriptada, body['esAdministrador']))
         conexion.connection.commit()  # Se confirma la transacción
         # Se retorna un objeto JSON con un mensaje de éxito
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
@@ -68,10 +69,9 @@ def actualizar_empleado(id_empleado, cursor, conexion):
         contrasenia_encriptada = generate_password_hash(
             empleado['contrasenia'], method='pbkdf2:sha256')
         cursor.execute(
-            'SELECT nombre, apellidoPaterno, apellidoMaterno, telefono, correo, contrasenia FROM empleado WHERE idEmpleado = %s', (id_empleado,))
+            'SELECT nombre, apellidoPaterno, apellidoMaterno, telefono, correo, contrasenia, esAdministrador FROM empleado WHERE idEmpleado = %s', (id_empleado,))
         if cursor.fetchone() is not None:
-            cursor.execute('UPDATE empleado SET nombre = %s, apellidoPaterno = %s, apellidoMaterno = %s, telefono = %s, correo = %s, contrasenia = %s WHERE idEmpleado = %s', (empleado['nombre'].upper(
-            ), empleado['apellidoPaterno'].upper(), empleado['apellidoMaterno'].upper(), empleado['telefono'], empleado['correo'].upper(), contrasenia_encriptada, id_empleado,))
+            cursor.execute('UPDATE empleado SET nombre = %s, apellidoPaterno = %s, apellidoMaterno = %s, telefono = %s, correo = %s, contrasenia = %s, esAdministrador = %s WHERE idEmpleado = %s', (empleado['nombre'].upper(), empleado['apellidoPaterno'].upper(), empleado['apellidoMaterno'].upper(), empleado['telefono'], empleado['correo'].upper(), contrasenia_encriptada, empleado['esAdministrador'], id_empleado,))
             conexion.connection.commit()
             return jsonify({'success': True, 'status': 202, 'message': 'Actualización exitosa', 'data': empleado})
         else:

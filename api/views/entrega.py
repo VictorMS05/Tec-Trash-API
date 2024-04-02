@@ -15,10 +15,10 @@ def obtener_entrega(id_entrega, cursor):
     try:
         if id_entrega == 'todos':
             cursor.execute(
-                'SELECT idEntrega, idEmpresa, idEmpleado, pesoFinal, costo, fechaRegistro, fechaEntrega FROM entrega')
+                'SELECT * FROM entrega')
         else:
             cursor.execute(
-                'SELECT idEntrega, idEmpresa, idEmpleado, pesoFinal, costo, fechaRegistro, fechaEntrega FROM entrega WHERE idEntrega = %s', (id_entrega,))
+                'SELECT * FROM entrega WHERE idEntrega = %s', (id_entrega,))
         entregas = cursor.fetchall()
         diccionario = []
         for registro in entregas:
@@ -28,8 +28,10 @@ def obtener_entrega(id_entrega, cursor):
                 'idEmpleado': registro[2],
                 'pesoFinal': registro[3],
                 'costo': registro[4],
-                'fechaRegistro': registro[5],
-                'fechaEntrega': registro[6]
+                'estatus': registro[5],
+                'fechaRegistro': registro[6],
+                'fechaProgramada': registro[7],
+                'fechaEntrega': registro[8]
             }
             diccionario.append(arreglo)
         return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
@@ -44,8 +46,8 @@ def registrar_entrega(cursor, conexion):
     """Función POST para registrar una entrega en la base de datos"""
     try:
         body = request.json
-        cursor.execute('INSERT INTO entrega (idEmpresa, idEmpleado, pesoFinal, costo, fechaRegistro, fechaEntrega) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP(), NULL)',
-                       (body['idEmpresa'].upper(), body['idEmpleado'].upper(), body['pesoFinal'], body['costo']))
+        cursor.execute('INSERT INTO entrega (idEmpresa, idEmpleado, pesoFinal, costo, estatus, fechaRegistro, fechaProgramada, fechaEntrega) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP(), %s, NULL)',
+                       (body['idEmpresa'].upper(), body['idEmpleado'].upper(), body['pesoFinal'], body['costo'], body['estatus'], body['fechaProgramada']))
         conexion.connection.commit()
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
     except OperationalError as e:
@@ -60,10 +62,10 @@ def actualizar_entrega(id_entrega, cursor, conexion):
     try:
         entrega = request.json
         cursor.execute(
-            'SELECT idEmpresa, idEmpleado, pesoFinal, costo, fechaRegistro, fechaEntrega FROM entrega WHERE idEntrega = %s', (id_entrega,))
+            'SELECT idEmpresa, idEmpleado, pesoFinal, costo, estatus, fechaRegistro, fechaProgramada, fechaEntrega FROM entrega WHERE idEntrega = %s', (id_entrega,))
         if cursor.fetchone() != None:
-            cursor.execute('UPDATE entrega SET idEmpresa = %s, idEmpleado = %s, pesoFinal = %s, costo = %s, fechaRegistro = %s, fechaEntrega = %s WHERE idEntrega = %s', (
-                entrega['idEmpresa'].upper(), entrega['idEmpleado'].upper(), entrega['pesoFinal'], entrega['costo'], entrega['fechaRegistro'], entrega['fechaEntrega'], id_entrega,))
+            cursor.execute('UPDATE entrega SET idEmpresa = %s, idEmpleado = %s, pesoFinal = %s, costo = %s, estatus = %s, fechaRegistro = %s, fechaProgramada = %s, fechaEntrega = %s WHERE idEntrega = %s', (
+                entrega['idEmpresa'].upper(), entrega['idEmpleado'].upper(), entrega['pesoFinal'], entrega['costo'], entrega['estatus'],  entrega['fechaRegistro'], entrega['fechaProgramada'], entrega['fechaEntrega'], id_entrega,))
             conexion.connection.commit()
             return jsonify({'success': True, 'status': 202, 'message': 'Actualización exitosa', 'data': entrega})
         else:
