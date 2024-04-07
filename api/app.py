@@ -6,7 +6,7 @@ from flask_mysqldb import MySQL  # Se importa la clase MySQL de flask_mysqldb
 from config import diccionario_de_configuraciones
 # Se importan las funciones para manejar errores
 from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, tipo_de_medio_no_soportado, error_interno_del_servidor
-from views.cliente import obtener_clientes, registrar_cliente, actualizar_cliente, eliminar_cliente, cambiar_contrasenia_cliente
+from views.cliente import obtener_clientes, registrar_cliente, actualizar_cliente, eliminar_cliente, cambiar_contrasenia_cliente, iniciar_sesion_cliente
 from views.empleado import obtener_empleado, registrar_empleado, actualizar_empleado, eliminar_empleado, cambiar_contrasenia_empleado
 from views.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa, cambiar_contrasenia_empresa
 from views.desecho import obtener_desecho, registrar_desecho, actualizar_desecho, eliminar_desecho, asignar_recoleccion_entrega_desecho
@@ -67,6 +67,15 @@ def patch_1(id_cliente):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla cliente"""
     cursor = conexion.connection.cursor()
     return cambiar_contrasenia_cliente(id_cliente, cursor, conexion)
+
+# * POST (Iniciar sesión)
+
+
+@app.route('/cliente/iniciar-sesion', methods=['POST'])
+def iniciar_sesion_1():
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para iniciar sesión como cliente"""
+    cursor = conexion.connection.cursor()
+    return iniciar_sesion_cliente(cursor)
 
 #! RUTAS PARA LA TABLA EMPLEADO
 

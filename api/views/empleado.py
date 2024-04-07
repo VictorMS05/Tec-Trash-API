@@ -47,11 +47,8 @@ def registrar_empleado(cursor, conexion):
     """Función POST para registrar un empleado en la base de datos"""
     try:
         body = request.json  # Se obtiene el cuerpo de la petición
-        contrasenia_encriptada = generate_password_hash(
-            body['contrasenia'], method='pbkdf2:sha256')
         # Se ejecuta una consulta SQL con parámetros
-        cursor.execute('INSERT INTO empleado VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (body['idEmpleado'].upper(), body['nombre'].upper(
-        ), body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(), body['telefono'], body['correo'].upper(), contrasenia_encriptada, body['esAdministrador']))
+        cursor.execute('INSERT INTO empleado VALUES (%s, %s, %s, %s, %s, %s, MD5(%s), %s)', (body['idEmpleado'].upper(), body['nombre'].upper(), body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(), body['telefono'], body['correo'].upper(), body['contrasenia'], body['esAdministrador']))
         conexion.connection.commit()  # Se confirma la transacción
         # Se retorna un objeto JSON con un mensaje de éxito
         return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
@@ -106,8 +103,7 @@ def cambiar_contrasenia_empleado(id_empleado, cursor, conexion):
         cursor.execute(f'SELECT idEmpleado FROM empleado WHERE idEmpleado = {id_empleado}')
         if cursor.fetchone() is not None:
             if 'contrasenia' in body:
-                contrasenia_encriptada = generate_password_hash(body['contrasenia'], method='pbkdf2:sha256')
-                cursor.execute('UPDATE empleado SET contrasenia = %s WHERE idEmpleado = %s', (contrasenia_encriptada, id_empleado,))
+                cursor.execute('UPDATE empleado SET contrasenia = MD5(%s) WHERE idEmpleado = %s', (body['contrasenia'], id_empleado,))
                 conexion.connection.commit()
                 return jsonify({'success': True, 'status': 200, 'message': f'Se ha actualizado la contraseña del empleado {id_empleado} exitosamente'})
             # Se retorna un objeto JSON con un error 400
@@ -123,3 +119,22 @@ def cambiar_contrasenia_empleado(id_empleado, cursor, conexion):
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
         return jsonify({'success': False, 'status': 500, 'message': 'Error en la base de datos', 'error': str(e)})
+
+# * POST (Iniciar sesión)
+
+
+def iniciar_sesion_empleado(cursor):
+    """Función POST para iniciar sesión de un empleado"""
+    try:
+        body = request.json  # Se obtiene el cuerpo de la petición
+        cursor.execute('SELECT COUNT(idEmpleado) > 0 WHERE correo = %s AND contrasenia = MD5(%s)', (body['correo'], body['contrasenia']))
+        if cursor.fetchone()[0]:
+            return jsonify({'success': True, 'status': 200, 'message': 'Inicio de sesión exitoso'})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Empleado no encontrado', 'details': 'No se encontró el empleado en la base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
