@@ -4,7 +4,6 @@
 from flask import jsonify, request
 # Se importa la clase OperationalError de MySQLdb
 from MySQLdb import OperationalError, IntegrityError
-from werkzeug.security import generate_password_hash
 
 #! MÉTODOS HTTP PARA TABLA EMPRESA
 
@@ -16,10 +15,15 @@ def obtener_empresa(id_empresa, cursor):
     try:
         # Se ejecuta una consulta SQL
         if id_empresa == 'todos':
-            cursor.execute(
-                'SELECT idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, estado, telefono, correo, contrasenia,  nombreEncargado, apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM empresa')
+            cursor.execute('SELECT idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, '
+                            'estado, telefono, correo, contrasenia,  nombreEncargado, '
+                            'apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM '
+                            'empresa')
         else:
-            cursor.execute('SELECT idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, estado, telefono, correo, contrasenia,nombreEncargado, apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM empresa WHERE idEmpresa = %s', (id_empresa,))
+            cursor.execute(f'SELECT idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, '
+                            f'estado, telefono, correo, contrasenia,nombreEncargado, '
+                            f'apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM '
+                            f'empresa WHERE idEmpresa = {id_empresa}')
         empresas = cursor.fetchall()  # Se obtienen todos los registros de la consulta
         diccionario = []  # Se crea un diccionario vacío
         for registro in empresas:  # Se recorren los registros obtenidos
@@ -42,10 +46,16 @@ def obtener_empresa(id_empresa, cursor):
             }
             diccionario.append(arreglo)  # Se agrega el arreglo al diccionario
             # Se retorna un objeto JSON con el diccionario obtenido
-        return jsonify({'success': True, 'status': 200, 'message': 'Consulta exitosa', 'data': diccionario})
+        return jsonify({'success': True,
+                        'status': 200, 
+                        'message': 'Consulta exitosa', 
+                        'data': diccionario})
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
-        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
 
 # * POST
 
@@ -54,16 +64,55 @@ def registrar_empresa(cursor, conexion):
     """Función POST para registrar una empresa en la base de datos"""
     try:
         body = request.json  # Se obtiene el cuerpo de la petición
-        contrasenia_encriptada = generate_password_hash(
-            body['contrasenia'], method='pbkdf2:sha256')
         # Se ejecuta una consulta SQL con parámetros
-        cursor.execute('INSERT INTO empresa VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (body['idEmpresa'].upper(), body['nombre'].upper(), body['calle'].upper(), body['numeroExterior'], body['colonia'].upper(), body['ciudad'].upper(), body['estado'].upper(), body['telefono'], body['correo'].upper(), contrasenia_encriptada, body['nombreEncargado'].upper(), body['apellidoPaternoE'].upper(), body['apellidoMaternoE'].upper(), body['esEntrega'], body['pesoEstablecido']))
+        cursor.execute('INSERT INTO empresa VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, MD5(%s), '
+                        '%s, %s, %s, %s, %s)', (body['rfc'].upper(), body['nombre'].upper(), 
+                                                body['calle'].upper(), body['numeroExterior'],
+                                                body['colonia'].upper(), body['ciudad'].upper(),
+                                                body['estado'].upper(), body['telefono'],
+                                                body['correo'], body['contrasenia'],
+                                                body['nombreEncargado'].upper(),
+                                                body['apellidoPaternoE'].upper(),
+                                                body['apellidoMaternoE'].upper(), body['esEntrega'],
+                                                body['pesoEstablecido']))
         conexion.connection.commit()  # Se confirma la transacción
         # Se retorna un objeto JSON con un mensaje de éxito
-        return jsonify({'success': True, 'status': 201, 'message': 'Registro exitoso'})
+        return jsonify({'success': True,
+                        'status': 201, 
+                        'message': 'Registro exitoso', 
+                        'data': {'rfc': body['rfc'].upper(), 
+                                'nombre': body['nombre'].upper(), 
+                                'calle': body['calle'].upper(), 
+                                'numeroExterior': body['numeroExterior'], 
+                                'colonia': body['colonia'].upper(), 
+                                'ciudad': body['ciudad'].upper(), 
+                                'estado': body['estado'].upper(), 
+                                'telefono': body['telefono'], 
+                                'correo': body['correo'], 
+                                'nombreEncargado': body['nombreEncargado'].upper(), 
+                                'apellidoPaternoE': body['apellidoPaternoE'].upper(), 
+                                'apellidoMaternoE': body['apellidoMaternoE'].upper(), 
+                                'esEntrega': body['esEntrega'], 
+                                'pesoEstablecido': body['pesoEstablecido']}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Petición inválida', 
+                                    'details': f'Falta la clave {str(e)} en el body de la '
+                                                f'petición'}})
     except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Error de integridad MySQL', 
+                                    'details': str(e)}})
+    except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
-        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
 
 
 # * PUT
@@ -72,14 +121,14 @@ def registrar_empresa(cursor, conexion):
 def actualizar_empresa(id_empresa, cursor, conexion):
     """Función PUT para actualizar una empresa específica en la base de datos"""
     empresa = request.json
-    contrasenia_encriptada = generate_password_hash(
-            empresa['contrasenia'], method='pbkdf2:sha256')
     try:
         empresa = request.json
-        cursor.execute('SELECT nombre, calle, numeroExterior, colonia, ciudad, estado, telefono, correo, contrasenia, nombreEncargado, apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM empresa WHERE idEmpresa = %s', (id_empresa,))
+        cursor.execute(f'SELECT nombre, calle, numeroExterior, colonia, ciudad, estado, telefono, '
+                        f'correo, contrasenia, nombreEncargado, apellidoPaternoE, apellidoMaternoE, '
+                        f'esEntrega, pesoEstablecido FROM empresa WHERE idEmpresa = %s', (id_empresa,))
         if cursor.fetchone() is not None:
-            cursor.execute('UPDATE empresa SET nombre = %s, calle = %s, numeroExterior = %s, colonia = %s, ciudad = %s, estado = %s, telefono = %s, correo = %s, contrasenia = %s, nombreEncargado = %s, apellidoPaternoE = %s, apellidoMaternoE = %s, esEntrega = %s, pesoEstablecido = %s WHERE idEmpresa = %s', (
-                empresa['nombre'].upper(), empresa['calle'].upper(), empresa['numeroExterior'], empresa['colonia'].upper(), empresa['ciudad'].upper(), empresa['estado'].upper(), empresa['telefono'], empresa['correo'].upper(), contrasenia_encriptada, empresa['nombreEncargado'].upper(), empresa['apellidoPaternoE'].upper(), empresa['apellidoMaternoE'].upper(), empresa['esEntrega'], empresa['pesoEstablecido'], id_empresa,))
+            cursor.execute('UPDATE empresa SET nombre = %s, calle = %s, numeroExterior = %s, colonia = %s, ciudad = %s, estado = %s, telefono = %s, correo = %s, nombreEncargado = %s, apellidoPaternoE = %s, apellidoMaternoE = %s, esEntrega = %s, pesoEstablecido = %s WHERE idEmpresa = %s', (
+                empresa['nombre'].upper(), empresa['calle'].upper(), empresa['numeroExterior'], empresa['colonia'].upper(), empresa['ciudad'].upper(), empresa['estado'].upper(), empresa['telefono'], empresa['correo'].upper(), empresa['nombreEncargado'].upper(), empresa['apellidoPaternoE'].upper(), empresa['apellidoMaternoE'].upper(), empresa['esEntrega'], empresa['pesoEstablecido'], id_empresa,))
             conexion.connection.commit()
             return jsonify({'success': True, 'status': 202, 'message': 'Actualización exitosa', 'data': empresa})
         else:

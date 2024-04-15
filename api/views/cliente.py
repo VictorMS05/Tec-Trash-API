@@ -101,7 +101,7 @@ def registrar_cliente(cursor, conexion):
                                     'type': 'Error del cliente', 
                                     'message': 'Petición inválida', 
                                     'details': f'Falta la clave {str(e)} en el body de la '
-                                    'petición'}})
+                                                f'petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
@@ -122,8 +122,8 @@ def actualizar_cliente(id_cliente, cursor, conexion):
     """Función PUT para actualizar un cliente específico en la base de datos"""
     try:
         body = request.json  # Se obtiene el body de la petición
-        cursor.execute(f'SELECT idCliente FROM cliente WHERE idCliente = {id_cliente}')
-        if cursor.fetchone() is not None:
+        cursor.execute(f'SELECT COUNT(idCliente) > 0 FROM cliente WHERE idCliente = {id_cliente}')
+        if cursor.fetchone()[0]:
             cursor.execute('UPDATE cliente SET nombre = %s, apellidoPaterno = %s, apellidoMaterno '
                             '= %s, fechaNacimiento = %s, sexo = %s, estadoCivil = %s, calle = %s, '
                             'numeroExterior = %s, numeroInterior = %s, colonia = %s, codigoPostal '
@@ -143,7 +143,7 @@ def actualizar_cliente(id_cliente, cursor, conexion):
             conexion.connection.commit()
             return jsonify({'success': True,
                             'status': 200, 
-                            'message': 'El cliente se ha actualizado exitosamente', 
+                            'message': f'El cliente {telefono} se ha actualizado exitosamente', 
                             'data': {'nombre': body['nombre'].upper(), 
                                         'apellidoPaterno': body['apellidoPaterno'].upper(), 
                                         'apellidoMaterno': body['apellidoMaterno'].upper(), 
@@ -163,14 +163,14 @@ def actualizar_cliente(id_cliente, cursor, conexion):
                                     'type': 'Error del cliente', 
                                     'message': 'Cliente no encontrado', 
                                     'details': f'No se encontró el cliente {id_cliente} en la '
-                                                'base de datos'}})
+                                                f'base de datos'}})
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
                                     'type': 'Error del cliente', 
                                     'message': 'Petición inválida', 
                                     'details': f'Falta la clave {str(e)} en el body de la '
-                                    'petición'}})
+                                                f'petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
@@ -191,8 +191,8 @@ def eliminar_cliente(id_cliente, cursor, conexion):
     """Función DELETE para eliminar un cliente específico o todos los clientes de la base de 
     datos"""
     try:
-        cursor.execute(f'SELECT idCliente FROM cliente WHERE idCliente = {id_cliente}')
-        if cursor.fetchone() is not None:
+        cursor.execute(f'SELECT COUNT(idCliente) > 0 FROM cliente WHERE idCliente = {id_cliente}')
+        if cursor.fetchone()[0]:
             # Se ejecuta una consulta SQL
             cursor.execute('DELETE FROM cliente WHERE idCliente = %s', (id_cliente,))
             conexion.connection.commit()
@@ -204,7 +204,8 @@ def eliminar_cliente(id_cliente, cursor, conexion):
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 
                                     'message': 'Cliente no encontrado', 
-                                    'details': f'El cliente {id_cliente} no existe'}})
+                                    'details': f'No se encontró el cliente {id_cliente} en la '
+                                                f'base de datos'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
@@ -225,9 +226,9 @@ def cambiar_contrasenia_cliente(id_cliente, cursor, conexion):
     """Función PATCH para cambiar la contraseña de un cliente específico en la base de datos"""
     try:
         body = request.json
-        cursor.execute(f'SELECT idCliente FROM cliente WHERE idCliente = {id_cliente}')
-        if cursor.fetchone() is not None:
-            if 'contrasenia' in body:
+        cursor.execute(f'SELECT COUNT(idCliente) > 0 FROM cliente WHERE idCliente = {id_cliente}')
+        if cursor.fetchone()[0]:
+            if 'contrasenia' in body and body['contrasenia'] != '':
                 cursor.execute('UPDATE cliente SET contrasenia = MD5(%s) WHERE idCliente = %s',
                                 (body['contrasenia'], id_cliente,))
                 conexion.connection.commit()
@@ -239,21 +240,21 @@ def cambiar_contrasenia_cliente(id_cliente, cursor, conexion):
             return jsonify({'error': {'code': 400,
                                         'type': 'Error del cliente', 
                                         'message': 'Petición inválida', 
-                                        'details': 'Falta la clave contrasenia en el body de la '
+                                        'details': 'Falta la clave y/o valor contrasenia en el body de la '
                                                     'petición'}})
         # Se retorna un objeto JSON con un error 404
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 
                                     'message': 'Cliente no encontrado', 
                                     'details': f'No se encontró el cliente {id_cliente} en la '
-                                                'base de datos'}})
+                                                f'base de datos'}})
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
                                     'type': 'Error del cliente', 
                                     'message': 'Petición inválida', 
                                     'details': f'Falta la clave {str(e)} en el body de la '
-                                                'petición'}})
+                                                f'petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
@@ -283,14 +284,14 @@ def iniciar_sesion_cliente(cursor):
                                     'type': 'Error del cliente',
                                     'message': 'Cliente no encontrado',
                                     'details': 'El cliente no existe o la contraseña es '
-                                    'incorrecta'}})
+                                                'incorrecta'}})
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
                                     'type': 'Error del cliente',
                                     'message': 'Petición inválida',
                                     'details': f'Falta la clave {str(e)} en el body de la '
-                                    'petición'}})
+                                                f'petición'}})
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
         return jsonify({'error': {'code': 500,
