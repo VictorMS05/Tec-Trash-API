@@ -6,7 +6,7 @@ from flask_mysqldb import MySQL  # Se importa la clase MySQL de flask_mysqldb
 from config import diccionario_de_configuraciones
 # Se importan las funciones para manejar errores
 from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, tipo_de_medio_no_soportado, error_interno_del_servidor
-from views.cliente import obtener_clientes, registrar_cliente, actualizar_cliente, eliminar_cliente, cambiar_contrasenia_cliente, iniciar_sesion_cliente
+from views.cliente import consultar_clientes, insertar_cliente, actualizar_cliente, eliminar_cliente, insertar_direccion_cliente, eliminar_direccion_cliente, actualizar_contrasenia_cliente, iniciar_sesion_cliente
 from views.empleado import obtener_empleado, registrar_empleado, actualizar_empleado, eliminar_empleado, cambiar_contrasenia_empleado, iniciar_sesion_empleado
 from views.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa, cambiar_contrasenia_empresa
 from views.desecho import obtener_desecho, registrar_desecho, actualizar_desecho, eliminar_desecho, asignar_recoleccion_entrega_desecho
@@ -24,28 +24,29 @@ conexion = MySQL(app)
 
 @app.route('/cliente/<string:id_cliente>')
 def get_1(id_cliente):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla cliente"""
-    cursor = conexion.connection.cursor(
-    )  # Se crea un cursor para interactuar con la base de datos
-    return obtener_clientes(id_cliente, cursor)
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    cliente"""
+    cursor = conexion.connection.cursor()  # Se crea un cursor para interactuar con la base de datos
+    return consultar_clientes(id_cliente, cursor)
 
 # * POST
 
 
 @app.route('/cliente', methods=['POST'])
 def post_1():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla cliente"""
-    cursor = conexion.connection.cursor(
-    )  # Se crea un cursor para interactuar con la base de datos
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla 
+    cliente"""
+    cursor = conexion.connection.cursor()  # Se crea un cursor para interactuar con la base de datos
     # Se retorna el resultado de la función registrar_cliente
-    return registrar_cliente(cursor, conexion)
+    return insertar_cliente(cursor, conexion)
 
 # * PUT
 
 
 @app.route('/cliente/<string:id_cliente>', methods=['PUT'])
 def put_1(id_cliente):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla cliente"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla 
+    cliente"""
     cursor = conexion.connection.cursor()
     return actualizar_cliente(id_cliente, cursor, conexion)
 
@@ -54,26 +55,45 @@ def put_1(id_cliente):
 
 @app.route('/cliente/<string:id_cliente>', methods=['DELETE'])
 def delete_1(id_cliente):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla cliente"""
-    cursor = conexion.connection.cursor(
-    )  # Se crea un cursor para interactuar con la base de datos
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la 
+    tabla cliente"""
+    cursor = conexion.connection.cursor()  # Se crea un cursor para interactuar con la base de datos
     return eliminar_cliente(id_cliente, cursor, conexion)
 
 # * PATCH
 
 
-@app.route('/cliente/<string:id_cliente>', methods=['PATCH'])
+@app.route('/cliente/<string:id_cliente>/insertar-direccion', methods=['PATCH'])
 def patch_1(id_cliente):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla cliente"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
+    cliente"""
     cursor = conexion.connection.cursor()
-    return cambiar_contrasenia_cliente(id_cliente, cursor, conexion)
+    return insertar_direccion_cliente(id_cliente, cursor, conexion)
+
+
+@app.route('/cliente/<string:id_cliente>/eliminar-direccion/<int:numero_direccion>',
+            methods=['PATCH'])
+def patch_2(id_cliente, numero_direccion):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
+    cliente"""
+    cursor = conexion.connection.cursor()
+    return eliminar_direccion_cliente(id_cliente, numero_direccion, cursor, conexion)
+
+
+@app.route('/cliente/<string:id_cliente>/actualizar-contrasenia', methods=['PATCH'])
+def patch_3(id_cliente):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
+    cliente"""
+    cursor = conexion.connection.cursor()
+    return actualizar_contrasenia_cliente(id_cliente, cursor, conexion)
 
 # * POST (Iniciar sesión)
 
 
 @app.route('/cliente/iniciar-sesion', methods=['POST'])
 def iniciar_sesion_1():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para iniciar sesión como cliente"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para iniciar 
+    sesión como cliente"""
     cursor = conexion.connection.cursor()
     return iniciar_sesion_cliente(cursor)
 
@@ -119,7 +139,7 @@ def delete_2(id_empleado):
 
 
 @app.route('/empleado/<string:id_empleado>', methods=['PATCH'])
-def patch_2(id_empleado):
+def patch_4(id_empleado):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla empleado"""
     cursor = conexion.connection.cursor()
     return cambiar_contrasenia_empleado(id_empleado, cursor, conexion)
@@ -175,7 +195,7 @@ def delete_3(id_empresa):
 
 
 @app.route('/empresa/<string:id_empresa>', methods=['PATCH'])
-def patch_3(id_empresa):
+def patch_5(id_empresa):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla empresa"""
     cursor = conexion.connection.cursor()
     return cambiar_contrasenia_empresa(id_empresa, cursor, conexion)
@@ -222,7 +242,7 @@ def delete_4(id_desecho):
 
 
 @app.route('/desecho/<string:id_desecho>', methods=['PATCH'])
-def patch_4(id_desecho):
+def patch_6(id_desecho):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla desecho"""
     cursor = conexion.connection.cursor()
     return asignar_recoleccion_entrega_desecho(id_desecho, cursor, conexion)
@@ -269,7 +289,7 @@ def delete_5(id_recoleccion):
 
 
 @app.route('/recoleccion/<string:id_recoleccion>', methods=['PATCH'])
-def patch_5(id_recoleccion):
+def patch_7(id_recoleccion):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla recolección"""
     cursor = conexion.connection.cursor()
     return finalizar_recoleccion(id_recoleccion, cursor, conexion)
@@ -316,7 +336,7 @@ def delete_6(id_entrega):
 
 
 @app.route('/entrega/<string:id_entrega>', methods=['PATCH'])
-def patch_6(id_entrega):
+def patch_8(id_entrega):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla entrega"""
     cursor = conexion.connection.cursor()
     return finalizar_entrega(id_entrega, cursor, conexion)
