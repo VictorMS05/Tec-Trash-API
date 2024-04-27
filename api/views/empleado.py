@@ -11,7 +11,8 @@ from MySQLdb import OperationalError, IntegrityError
 
 
 def consultar_empleado(id_empleado, cursor):
-    """Función GET para obtener un empleado específico o todos los empleados de la base de datos"""
+    """Función GET para consultar un empleado específico o todos los empleados de la base de 
+    datos"""
     try:
         # Se ejecuta una consulta SQL
         if id_empleado == 'todos':
@@ -63,7 +64,7 @@ def consultar_empleado(id_empleado, cursor):
 
 
 def insertar_empleado(cursor, conexion):
-    """Función POST para registrar un empleado en la base de datos"""
+    """Función POST para insertar un empleado en la base de datos"""
     try:
         body = request.json  # Se obtiene el cuerpo de la petición
         # Se ejecuta una consulta SQL con parámetros
@@ -220,7 +221,6 @@ def eliminar_empleado(id_empleado, cursor, conexion):
                         (id_empleado,))
         if cursor.fetchone()[0]:
             # Se ejecuta una consulta SQL
-            print(id_empleado)
             cursor.execute('DELETE FROM empleado WHERE idEmpleado = %s', (id_empleado,))
             conexion.connection.commit()
             return jsonify({'success': True,
@@ -249,7 +249,7 @@ def eliminar_empleado(id_empleado, cursor, conexion):
 
 
 def actualizar_contrasenia_empleado(id_empleado, cursor, conexion):
-    """Función PATCH para cambiar la contraseña de un empleado específico en la base de datos"""
+    """Función PATCH para actualizar la contraseña de un empleado específico en la base de datos"""
     try:
         body = request.json
         cursor.execute('SELECT COUNT(idEmpleado) > 0 FROM empleado WHERE idEmpleado = %s',
@@ -267,8 +267,8 @@ def actualizar_contrasenia_empleado(id_empleado, cursor, conexion):
             return jsonify({'error': {'code': 400,
                                         'type': 'Error del cliente', 
                                         'message': 'Petición incorrecta', 
-                                        'details': 'Falta la clave y/o valor contrasenia en el body de la '
-                                                    'petición'}})
+                                        'details': 'Falta la clave y/o valor contrasenia en el '
+                                                    'body de la petición'}})
         # Se retorna un objeto JSON con un error 404
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 
@@ -280,8 +280,8 @@ def actualizar_contrasenia_empleado(id_empleado, cursor, conexion):
         return jsonify({'error': {'code': 400,
                                     'type': 'Error del cliente', 
                                     'message': 'Petición inválida', 
-                                    'details': f'Falta la clave {str(e)} en el body de la '
-                                                f'petición'}})
+                                    'details': f'Falta la clave {str(e)} en el '
+                                                f'body de la petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
@@ -302,8 +302,8 @@ def iniciar_sesion_empleado(cursor):
     """Función POST para iniciar sesión de un empleado"""
     try:
         body = request.json  # Se obtiene el cuerpo de la petición
-        cursor.execute('SELECT COUNT(idEmpleado) > 0 FROM empleado WHERE correo = %s AND contrasenia'
-                        ' = MD5(%s)', (body['correo'], body['contrasenia']))
+        cursor.execute('SELECT COUNT(idEmpleado) > 0 FROM empleado WHERE correo = %s AND '
+                        'contrasenia = MD5(%s)', (body['correo'], body['contrasenia']))
         if cursor.fetchone()[0]:
             return jsonify({'success': True, 'status': 200, 'message': 'Inicio de sesión exitoso'})
         # Se retorna un objeto JSON con un error 404

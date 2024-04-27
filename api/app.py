@@ -8,7 +8,7 @@ from config import diccionario_de_configuraciones
 from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, tipo_de_medio_no_soportado, error_interno_del_servidor
 from views.cliente import consultar_clientes, insertar_cliente, actualizar_cliente, eliminar_cliente, insertar_direccion_cliente, eliminar_direccion_cliente, actualizar_contrasenia_cliente, iniciar_sesion_cliente
 from views.empleado import consultar_empleado, insertar_empleado, actualizar_empleado, eliminar_empleado, actualizar_contrasenia_empleado, iniciar_sesion_empleado
-from views.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa, cambiar_contrasenia_empresa
+from views.empresa import consultar_empresa, insertar_empresa, actualizar_empresa, eliminar_empresa, actualizar_contrasenia_empresa, iniciar_sesion_empresa
 from views.desecho import obtener_desecho, registrar_desecho, actualizar_desecho, eliminar_desecho, asignar_recoleccion_entrega_desecho
 from views.recoleccion import obtener_recoleccion, registrar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion
 from views.entrega import obtener_entrega, registrar_entrega, actualizar_entrega, eliminar_entrega, finalizar_entrega
@@ -166,25 +166,28 @@ def iniciar_sesion_2():
 
 @app.route('/empresa/<string:id_empresa>')
 def get_3(id_empresa):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla empresa"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    empresa"""
     cursor = conexion.connection.cursor()
-    return obtener_empresa(id_empresa, cursor)
+    return consultar_empresa(id_empresa, cursor)
 
 # * POST
 
 
 @app.route('/empresa', methods=['POST'])
 def post_3():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla empresa"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla 
+    empresa"""
     cursor = conexion.connection.cursor()
-    return registrar_empresa(cursor, conexion)
+    return insertar_empresa(cursor, conexion)
 
 # * PUT
 
 
 @app.route('/empresa/<string:id_empresa>', methods=['PUT'])
 def put_3(id_empresa):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla empresa"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla 
+    empresa"""
     cursor = conexion.connection.cursor()
     return actualizar_empresa(id_empresa, cursor, conexion)
 
@@ -193,7 +196,8 @@ def put_3(id_empresa):
 
 @app.route('/empresa/<string:id_empresa>', methods=['DELETE'])
 def delete_3(id_empresa):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla empresa"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la 
+    tabla empresa"""
     cursor = conexion.connection.cursor()
     return eliminar_empresa(id_empresa, cursor, conexion)
 
@@ -204,7 +208,16 @@ def delete_3(id_empresa):
 def patch_5(id_empresa):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla empresa"""
     cursor = conexion.connection.cursor()
-    return cambiar_contrasenia_empresa(id_empresa, cursor, conexion)
+    return actualizar_contrasenia_empresa(id_empresa, cursor, conexion)
+
+# * POST (Iniciar sesión)
+
+
+@app.route('/empresa/iniciar-sesion', methods=['POST'])
+def iniciar_sesion_3():
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para iniciar sesión como empresa"""
+    cursor = conexion.connection.cursor()
+    return iniciar_sesion_empresa(cursor)
 
 #! RUTAS PARA LA TABLA DESECHO
 

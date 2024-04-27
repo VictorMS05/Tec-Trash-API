@@ -10,20 +10,20 @@ from MySQLdb import OperationalError, IntegrityError
 # *GET
 
 
-def obtener_empresa(id_empresa, cursor):
-    """Función GET para obtener una empresa específica o todas las empresas de la base de datos"""
+def consultar_empresa(id_empresa, cursor):
+    """Función GET para consultar una empresa específica o todas las empresas de la base de datos"""
     try:
         # Se ejecuta una consulta SQL
         if id_empresa == 'todos':
-            cursor.execute('SELECT idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, '
-                            'estado, telefono, correo, contrasenia,  nombreEncargado, '
-                            'apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM '
-                            'empresa')
+            cursor.execute('SELECT idEmpresa, nombre, calle, numeroExterior, numeroInterior, '
+                            'colonia, codigoPostal, ciudad, estado, referencia, telefono, correo, '
+                            'nombreEncargado, apellidoPaternoE, apellidoMaternoE, esEntrega, '
+                            'pesoEstablecido FROM empresa')
         else:
-            cursor.execute(f'SELECT idEmpresa, nombre, calle, numeroExterior, colonia, ciudad, '
-                            f'estado, telefono, correo, contrasenia,nombreEncargado, '
-                            f'apellidoPaternoE, apellidoMaternoE, esEntrega, pesoEstablecido FROM '
-                            f'empresa WHERE idEmpresa = {id_empresa}')
+            cursor.execute('SELECT idEmpresa, nombre, calle, numeroExterior, numeroInterior, '
+                            'colonia, codigoPostal, ciudad, estado, referencia, telefono, correo, '
+                            'nombreEncargado, apellidoPaternoE, apellidoMaternoE, esEntrega, '
+                            'pesoEstablecido FROM empresa WHERE idEmpresa = %s', (id_empresa,))
         empresas = cursor.fetchall()  # Se obtienen todos los registros de la consulta
         diccionario = []  # Se crea un diccionario vacío
         for registro in empresas:  # Se recorren los registros obtenidos
@@ -32,17 +32,19 @@ def obtener_empresa(id_empresa, cursor):
                 'nombre': registro[1],
                 'calle': registro[2],
                 'numeroExterior': registro[3],
-                'colonia': registro[4],
-                'ciudad': registro[5],
-                'estado': registro[6],
-                'telefono': registro[7],
-                'correo': registro[8],
-                'contrasenia': registro[9],
-                'nombreEncargado': registro[10],
-                'apellidoPaternoE': registro[11],
-                'apellidoMaternoE': registro[12],
-                'esEntrega': registro[13],
-                'pesoEstablecido': registro[14]
+                'numeroInterior': registro[4],
+                'colonia': registro[5],
+                'codigoPostal': registro[6],
+                'ciudad': registro[7],
+                'estado': registro[8],
+                'referencia': registro[9],
+                'telefono': registro[10],
+                'correo': registro[11],
+                'nombreEncargado': registro[12],
+                'apellidoPaternoE': registro[13],
+                'apellidoMaternoE': registro[14],
+                'esEntrega': registro[15],
+                'pesoEstablecido': registro[16]
             }
             diccionario.append(arreglo)  # Se agrega el arreglo al diccionario
             # Se retorna un objeto JSON con el diccionario obtenido
@@ -60,33 +62,45 @@ def obtener_empresa(id_empresa, cursor):
 # * POST
 
 
-def registrar_empresa(cursor, conexion):
-    """Función POST para registrar una empresa en la base de datos"""
+def insertar_empresa(cursor, conexion):
+    """Función POST para insertar una empresa en la base de datos"""
     try:
         body = request.json  # Se obtiene el cuerpo de la petición
         # Se ejecuta una consulta SQL con parámetros
-        cursor.execute('INSERT INTO empresa VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, MD5(%s), '
-                        '%s, %s, %s, %s, %s)', (body['rfc'].upper(), body['nombre'].upper(), 
-                                                body['calle'].upper(), body['numeroExterior'],
-                                                body['colonia'].upper(), body['ciudad'].upper(),
-                                                body['estado'].upper(), body['telefono'],
-                                                body['correo'], body['contrasenia'],
-                                                body['nombreEncargado'].upper(),
-                                                body['apellidoPaternoE'].upper(),
-                                                body['apellidoMaternoE'].upper(), body['esEntrega'],
-                                                body['pesoEstablecido']))
+        cursor.execute('INSERT INTO empresa VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, '
+                        '%s, MD5(%s), %s, %s, %s, %s, %s)', (body['rfc'].upper(),
+                                                            body['nombre'].upper(),
+                                                            body['calle'].upper(),
+                                                            body['numeroExterior'],
+                                                            body['numeroInterior'],
+                                                            body['colonia'].upper(),
+                                                            body['codigoPostal'],
+                                                            body['ciudad'].upper(),
+                                                            body['estado'].upper(),
+                                                            body['referencia'].upper(),
+                                                            body['telefono'],
+                                                            body['correo'],
+                                                            body['contrasenia'],
+                                                            body['nombreEncargado'].upper(),
+                                                            body['apellidoPaternoE'].upper(),
+                                                            body['apellidoMaternoE'].upper(),
+                                                            body['esEntrega'],
+                                                            body['pesoEstablecido']))
         conexion.connection.commit()  # Se confirma la transacción
         # Se retorna un objeto JSON con un mensaje de éxito
         return jsonify({'success': True,
                         'status': 201, 
-                        'message': 'Registro exitoso', 
+                        'message': 'La empresa se ha registrado exitosamente', 
                         'data': {'rfc': body['rfc'].upper(), 
                                 'nombre': body['nombre'].upper(), 
                                 'calle': body['calle'].upper(), 
                                 'numeroExterior': body['numeroExterior'], 
+                                'numeroInterior': body['numeroInterior'],
                                 'colonia': body['colonia'].upper(), 
+                                'codigoPostal': body['codigoPostal'],
                                 'ciudad': body['ciudad'].upper(), 
                                 'estado': body['estado'].upper(), 
+                                'referencia': body['referencia'].upper(),
                                 'telefono': body['telefono'], 
                                 'correo': body['correo'], 
                                 'nombreEncargado': body['nombreEncargado'].upper(), 
@@ -120,64 +134,186 @@ def registrar_empresa(cursor, conexion):
 
 def actualizar_empresa(id_empresa, cursor, conexion):
     """Función PUT para actualizar una empresa específica en la base de datos"""
-    empresa = request.json
     try:
-        empresa = request.json
-        cursor.execute(f'SELECT nombre, calle, numeroExterior, colonia, ciudad, estado, telefono, '
-                        f'correo, contrasenia, nombreEncargado, apellidoPaternoE, apellidoMaternoE, '
-                        f'esEntrega, pesoEstablecido FROM empresa WHERE idEmpresa = %s', (id_empresa,))
-        if cursor.fetchone() is not None:
-            cursor.execute('UPDATE empresa SET nombre = %s, calle = %s, numeroExterior = %s, colonia = %s, ciudad = %s, estado = %s, telefono = %s, correo = %s, nombreEncargado = %s, apellidoPaternoE = %s, apellidoMaternoE = %s, esEntrega = %s, pesoEstablecido = %s WHERE idEmpresa = %s', (
-                empresa['nombre'].upper(), empresa['calle'].upper(), empresa['numeroExterior'], empresa['colonia'].upper(), empresa['ciudad'].upper(), empresa['estado'].upper(), empresa['telefono'], empresa['correo'].upper(), empresa['nombreEncargado'].upper(), empresa['apellidoPaternoE'].upper(), empresa['apellidoMaternoE'].upper(), empresa['esEntrega'], empresa['pesoEstablecido'], id_empresa,))
+        body = request.json
+        cursor.execute('SELECT COUNT(idEmpresa) > 0 FROM empresa WHERE idEmpresa = %s',
+                        (id_empresa,))
+        if cursor.fetchone()[0]:
+            cursor.execute('UPDATE empresa SET nombre = %s, calle = %s, numeroExterior = %s, '
+                            'numeroInterior = %s, colonia = %s, codigoPostal = %s, ciudad = %s, '
+                            'estado = %s, referencia = %s, telefono = %s, correo = %s, '
+                            'nombreEncargado = %s, apellidoPaternoE = %s, apellidoMaternoE = %s, '
+                            'esEntrega = %s, pesoEstablecido = %s WHERE idEmpresa = %s',
+                            (body['nombre'].upper(), body['calle'].upper(), body['numeroExterior'],
+                                body['numeroInterior'], body['colonia'].upper(),
+                                body['codigoPostal'], body['ciudad'].upper(),
+                                body['estado'].upper(), body['referencia'].upper(),
+                                body['telefono'], body['correo'], body['nombreEncargado'].upper(),
+                                body['apellidoPaternoE'].upper(), body['apellidoMaternoE'].upper(),
+                                body['esEntrega'], body['pesoEstablecido'], id_empresa,))
+            rfc = id_empresa
+            if body['rfc'] != id_empresa and body['rfc'] != '':
+                cursor.execute('UPDATE empresa SET rfc = %s WHERE idEmpresa = %s',
+                                (body['rfc'], id_empresa,))
+                rfc = body['rfc']
             conexion.connection.commit()
-            return jsonify({'success': True, 'status': 202, 'message': 'Actualización exitosa', 'data': empresa})
-        else:
-            # Se retorna un objeto JSON con un error 404
-            return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Empresa no encontrada', 'details': f'No se encontró la empresa {id_empresa} en la base de datos'}})
+            return jsonify({'success': True,
+                            'status': 200, 
+                            'message': f'La empresa {id_empresa} se ha actualizado exitosamente', 
+                            'data': {'rfc': rfc,
+                                        'nombre': body['nombre'].upper(),
+                                        'calle': body['calle'].upper(),
+                                        'numeroExterior': body['numeroExterior'],
+                                        'numeroInterior': body['numeroInterior'],
+                                        'colonia': body['colonia'].upper(),
+                                        'codigoPostal': body['codigoPostal'],
+                                        'ciudad': body['ciudad'].upper(),
+                                        'estado': body['estado'].upper(),
+                                        'referencia': body['referencia'].upper(),
+                                        'telefono': body['telefono'],
+                                        'correo': body['correo'],
+                                        'nombreEncargado': body['nombreEncargado'].upper(),
+                                        'apellidoPaternoE': body['apellidoPaternoE'].upper(),
+                                        'apellidoMaternoE': body['apellidoMaternoE'].upper(),
+                                        'esEntrega': body['esEntrega'],
+                                        'pesoEstablecido': body['pesoEstablecido']}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Empresa no encontrada', 
+                                    'details': f'No se encontró la empresa {id_empresa} en la base '
+                                                f'de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Petición inválida', 
+                                    'details': f'Falta la clave {str(e)} en el body de la '
+                                                f'petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
-        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Error de integridad MySQL', 
+                                    'details': str(e)}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
 
 # * DELETE
 
 
 def eliminar_empresa(id_empresa, cursor, conexion):
-    """Función DELETE para eliminar una empresa específica o todas las empresas de la base de datos"""
+    """Función DELETE para eliminar una empresa específica o todas las empresas de la base de 
+    datos"""
     try:
-        # Se ejecuta una consulta SQL
-        cursor.execute(
-            'DELETE FROM empresa WHERE idEmpresa = %s', (id_empresa,))
-        conexion.connection.commit()
-        return jsonify({'success': True, 'status': 200, 'message': 'Empresa eliminada'})
+        cursor.execute('SELECT COUNT(idEmpresa) > 0 FROM empresa WHERE idEmpresa = %s',
+                        (id_empresa,))
+        if cursor.fetchone()[0]:
+            # Se ejecuta una consulta SQL
+            cursor.execute('DELETE FROM empresa WHERE idEmpresa = %s', (id_empresa,))
+            conexion.connection.commit()
+            return jsonify({'success': True,
+                            'status': 200, 
+                            'message': f'La empresa {id_empresa} se ha eliminado exitosamente'})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Empresa no encontrada', 
+                                    'details': f'No se encontró la empresa {id_empresa} en la base '
+                                                f'de datos'}})
+    except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Error de integridad MySQL', 
+                                    'details': str(e)}})
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
-        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
 
 # * PATCH
 
 
-def cambiar_contrasenia_empresa(id_empresa, cursor, conexion):
-    """Función PATCH para cambiar la contraseña de una empresa específica en la base de datos"""
+def actualizar_contrasenia_empresa(id_empresa, cursor, conexion):
+    """Función PATCH para actualizar la contraseña de una empresa específica en la base de datos"""
     try:
-        body = request.json['contrasenia']
-        cursor.execute(
-            f'SELECT idEmpresa FROM empresa WHERE idEmpresa = {id_empresa}')
-        if cursor.fetchone() is not None:
-            if 'contrasenia' in body:
-                contrasenia_encriptada = generate_password_hash(body['contrasenia'], method='pbkdf2:sha256')
-                cursor.execute('UPDATE empresa SET contrasenia = %s WHERE idEmpresa = %s', (contrasenia_encriptada, id_empresa,))
+        body = request.json
+        cursor.execute('SELECT COUNT(idEmpresa) > 0 FROM empresa WHERE idEmpresa = %s',
+                        (id_empresa,))
+        if cursor.fetchone()[0]:
+            if 'contrasenia' in body and body['contrasenia'] != '':
+                cursor.execute('UPDATE empresa SET contrasenia = MD5(%s) WHERE idEmpresa = %s',
+                                (body['contrasenia'], id_empresa,))
                 conexion.connection.commit()
-                return jsonify({'success': True, 'status': 200, 'message': 'Contraseña actualizada'})
+                return jsonify({'success': True,
+                                'status': 200, 
+                                'message': f'Se ha actualizado la contraseña de la empresa '
+                                            f'{id_empresa} exitosamente'})
             # Se retorna un objeto JSON con un error 400
-            return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición incorrecta', 'details': 'Falta la clave contrasenia en el body de la petición'}})
+            return jsonify({'error': {'code': 400,
+                                        'type': 'Error del cliente', 
+                                        'message': 'Petición incorrecta', 
+                                        'details': 'Falta la clave y/o valor contrasenia en el '
+                                                    'body de la petición'}})
         # Se retorna un objeto JSON con un error 404
-        return jsonify({'error': {'code': 404, 'type': 'Error del cliente', 'message': 'Empresa no encontrada', 'details': f'No se encontró la empresa {id_empresa} en la base de datos'}})
+        return jsonify({'error': {'code': 404,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Empresa no encontrada', 
+                                    'details': f'No se encontró la empresa {id_empresa} en la base '
+                                                f'de datos'}})
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
-        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Petición inválida', 'details': f'Falta la clave {str(e)} en el body de la petición'}})
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Petición inválida', 
+                                    'details': f'Falta la clave {str(e)} en el '
+                                                f'body de la petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
-        return jsonify({'error': {'code': 400, 'type': 'Error del cliente', 'message': 'Error de integridad MySQL', 'details': str(e)}})
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Error de integridad MySQL', 
+                                    'details': str(e)}})
     except OperationalError as e:
         # Se retorna un objeto JSON con un error 500
-        return jsonify({'error': {'code': 500, 'type': 'Error del servidor', 'message': 'Error en la base de datos', 'details': str(e)}})
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
+
+# * POST (Iniciar sesión)
+
+
+def iniciar_sesion_empresa(cursor):
+    """Función POST para iniciar sesión de una empresa en la base de datos"""
+    try:
+        body = request.json
+        cursor.execute('SELECT COUNT(idEmpresa) > 0 FROM empresa WHERE correo = %s '
+                        'AND contrasenia = MD5(%s)', (body['correo'], body['contrasenia'],))
+        if cursor.fetchone()[0]:
+            return jsonify({'success': True, 'status': 200, 'message': 'Inicio de sesión exitoso'})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Empresa no encontrada', 
+                                    'details': 'No se encontró la empresa en la base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Petición inválida', 
+                                    'details': f'Falta la clave {str(e)} en el body de la '
+                                                f'petición'}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})

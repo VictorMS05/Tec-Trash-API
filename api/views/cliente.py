@@ -11,7 +11,7 @@ from MySQLdb import OperationalError, IntegrityError
 
 
 def consultar_clientes(id_cliente, cursor):
-    """Función GET para obtener un cliente específico o todos los clientes de la base de datos"""
+    """Función GET para consultar un cliente específico o todos los clientes de la base de datos"""
     try:
         # Se ejecuta una consulta SQL
         if id_cliente == 'todos':  # Si no se recibe un id
@@ -78,7 +78,7 @@ def consultar_clientes(id_cliente, cursor):
 
 
 def insertar_cliente(cursor, conexion):
-    """Función POST para registrar un cliente en la base de datos"""
+    """Función POST para insertar un cliente en la base de datos"""
     try:
         body = request.json  # Se obtiene el body de la petición
         # Se ejecuta una consulta SQL con parámetros
@@ -389,7 +389,7 @@ def eliminar_direccion_cliente(id_cliente, numero_direccion, cursor, conexion):
 
 
 def actualizar_contrasenia_cliente(id_cliente, cursor, conexion):
-    """Función PATCH para cambiar la contraseña de un cliente específico en la base de datos"""
+    """Función PATCH para actualizar la contraseña de un cliente específico en la base de datos"""
     try:
         body = request.json
         cursor.execute(f'SELECT COUNT(idCliente) > 0 FROM cliente WHERE idCliente = {id_cliente}')
