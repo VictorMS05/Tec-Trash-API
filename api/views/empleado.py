@@ -10,14 +10,23 @@ from MySQLdb import OperationalError, IntegrityError
 # * GET
 
 
-def obtener_empleado(id_empleado, cursor):
+def consultar_empleado(id_empleado, cursor):
     """Función GET para obtener un empleado específico o todos los empleados de la base de datos"""
     try:
         # Se ejecuta una consulta SQL
         if id_empleado == 'todos':
-            cursor.execute('SELECT * FROM empleado')
+            cursor.execute('SELECT idEmpleado, nombre, apellidoPaterno, apellidoMaterno, '
+                            'fechaNacimiento, nss, telefono, correo, esAdministrador, '
+                            'contactoEmergenciaNombre, contactoEmergenciaApellidoP, '
+                            'contactoEmergenciaApellidoM, contactoEmergenciaParentesco, '
+                            'contactoEmergenciaTelefono FROM empleado')
         else:
-            cursor.execute('SELECT * FROM empleado WHERE idEmpleado = %s', (id_empleado,))
+            cursor.execute('SELECT idEmpleado, nombre, apellidoPaterno, apellidoMaterno, '
+                            'fechaNacimiento, nss, telefono, correo, esAdministrador, '
+                            'contactoEmergenciaNombre, contactoEmergenciaApellidoP, '
+                            'contactoEmergenciaApellidoM, contactoEmergenciaParentesco, '
+                            'contactoEmergenciaTelefono FROM empleado WHERE idEmpleado = %s',
+                            (id_empleado,))
         empleados = cursor.fetchall()  # Se obtienen todos los registros de la consulta
         diccionario = []  # Se crea un diccionario vacío
         for registro in empleados:  # Se recorren los registros obtenidos
@@ -26,9 +35,16 @@ def obtener_empleado(id_empleado, cursor):
                 'nombre': registro[1],
                 'apellidoPaterno': registro[2],
                 'apellidoMaterno': registro[3],
-                'telefono': registro[4],
-                'correo': registro[5],
-                'esAdministrador': registro[7]
+                'fechaNacimiento': registro[4],
+                'nss': registro[5],
+                'telefono': registro[6],
+                'correo': registro[7],
+                'esAdministrador': registro[8],
+                'contactoEmergenciaNombre': registro[9],
+                'contactoEmergenciaApellidoP': registro[10],
+                'contactoEmergenciaApellidoM': registro[11],
+                'contactoEmergenciaParentesco': registro[12],
+                'contactoEmergenciaTelefono': registro[13]
             }
             diccionario.append(arreglo)  # Se agrega el arreglo al diccionario
             # Se retorna un objeto JSON con el diccionario obtenido
@@ -46,16 +62,22 @@ def obtener_empleado(id_empleado, cursor):
 # * POST
 
 
-def registrar_empleado(cursor, conexion):
+def insertar_empleado(cursor, conexion):
     """Función POST para registrar un empleado en la base de datos"""
     try:
         body = request.json  # Se obtiene el cuerpo de la petición
         # Se ejecuta una consulta SQL con parámetros
-        cursor.execute('INSERT INTO empleado VALUES (%s, %s, %s, %s, %s, %s, MD5(%s), %s)',
+        cursor.execute('INSERT INTO empleado VALUES (%s, %s, %s, %s, %s, %s, %s, %s, MD5(%s), %s, '
+                        '%s, %s, %s, %s, %s)',
                         (body['rfc'].upper(), body['nombre'].upper(),
                             body['apellidoPaterno'].upper(), body['apellidoMaterno'].upper(),
-                            body['telefono'], body['correo'], body['contrasenia'],
-                            body['esAdministrador']))
+                            body['fechaNacimiento'], body['nss'], body['telefono'], body['correo'],
+                            body['contrasenia'], body['esAdministrador'],
+                            body['contactoEmergenciaNombre'].upper(),
+                            body['contactoEmergenciaApellidoP'].upper(),
+                            body['contactoEmergenciaApellidoM'].upper(),
+                            body['contactoEmergenciaParentesco'].upper(),
+                            body['contactoEmergenciaTelefono']))
         conexion.connection.commit()  # Se confirma la transacción
         # Se retorna un objeto JSON con un mensaje de éxito
         return jsonify({'success': True,
@@ -64,10 +86,27 @@ def registrar_empleado(cursor, conexion):
                         'data': {'rfc': body['rfc'].upper(),
                                     'nombre': body['nombre'].upper(), 
                                     'apellidoPaterno': body['apellidoPaterno'].upper(), 
-                                    'apellidoMaterno': body['apellidoMaterno'].upper(), 
+                                    'apellidoMaterno': body['apellidoMaterno'].upper(),
+                                    'fechaNacimiento': body['fechaNacimiento'],
+                                    'nss': body['nss'], 
                                     'telefono': body['telefono'], 
-                                    'correo': body['correo'].upper(), 
-                                    'esAdministrador': body['esAdministrador']}})
+                                    'correo': body['correo'], 
+                                    'esAdministrador': body['esAdministrador'],
+                                    'contactoEmergenciaNombre': (
+                                        body['contactoEmergenciaNombre'].upper()
+                                    ),
+                                    'contactoEmergenciaApellidoP': (
+                                        body['contactoEmergenciaApellidoP'].upper()
+                                    ),
+                                    'contactoEmergenciaApellidoM': (
+                                        body['contactoEmergenciaApellidoM'].upper()
+                                    ),
+                                    'contactoEmergenciaParentesco': (
+                                        body['contactoEmergenciaParentesco'].upper()
+                                    ),
+                                    'contactoEmergenciaTelefono': (
+                                        body['contactoEmergenciaTelefono']
+                                    )}})
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
@@ -99,12 +138,18 @@ def actualizar_empleado(id_empleado, cursor, conexion):
                         (id_empleado,))
         if cursor.fetchone()[0]:
             cursor.execute('UPDATE empleado SET nombre = %s, apellidoPaterno = %s, '
-                            'apellidoMaterno = %s, telefono = %s, correo = %s, contrasenia = %s, '
-                            'esAdministrador = %s WHERE idEmpleado = %s',
+                            'apellidoMaterno = %s, fechaNacimiento = %s, nss = %s, telefono = %s, '
+                            'correo = %s, esAdministrador = %s, contactoEmergenciaNombre = %s, '
+                            'contactoEmergenciaApellidoP = %s, contactoEmergenciaApellidoM = %s, '
+                            'contactoEmergenciaParentesco = %s, contactoEmergenciaTelefono = %s ',
                             (body['nombre'].upper(), body['apellidoPaterno'].upper(),
-                                body['apellidoMaterno'].upper(), body['telefono'],
-                                body['correo'], body['contrasenia'],
-                                body['esAdministrador'], id_empleado,))
+                                body['apellidoMaterno'].upper(), body['fechaNacimiento'],
+                                body['nss'], body['telefono'], body['correo'],
+                                body['esAdministrador'], body['contactoEmergenciaNombre'].upper(),
+                                body['contactoEmergenciaApellidoP'].upper(),
+                                body['contactoEmergenciaApellidoM'].upper(),
+                                body['contactoEmergenciaParentesco'].upper(),
+                                body['contactoEmergenciaTelefono']))
             rfc = id_empleado
             if body['rfc'] != id_empleado and body['rfc'] != '':
                 cursor.execute('UPDATE empleado SET idEmpleado = %s WHERE idEmpleado = %s',
@@ -117,10 +162,27 @@ def actualizar_empleado(id_empleado, cursor, conexion):
                             'data': {'rfc': rfc,
                                         'nombre': body['nombre'].upper(), 
                                         'apellidoPaterno': body['apellidoPaterno'].upper(), 
-                                        'apellidoMaterno': body['apellidoMaterno'].upper(), 
+                                        'apellidoMaterno': body['apellidoMaterno'].upper(),
+                                        'fechaNacimiento': body['fechaNacimiento'],
+                                        'nss': body['nss'], 
                                         'telefono': body['telefono'], 
                                         'correo': body['correo'], 
-                                        'esAdministrador': body['esAdministrador']}})
+                                        'esAdministrador': body['esAdministrador'],
+                                        'contactoEmergenciaNombre': (
+                                            body['contactoEmergenciaNombre'].upper()
+                                        ),
+                                        'contactoEmergenciaApellidoP': (
+                                            body['contactoEmergenciaApellidoP'].upper()
+                                        ),
+                                        'contactoEmergenciaApellidoM': (
+                                            body['contactoEmergenciaApellidoM'].upper()
+                                        ),
+                                        'contactoEmergenciaParentesco': (
+                                            body['contactoEmergenciaParentesco'].upper()
+                                        ),
+                                        'contactoEmergenciaTelefono': (
+                                            body['contactoEmergenciaTelefono']
+                                        )}})
         # Se retorna un objeto JSON con un error 404
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 
@@ -186,7 +248,7 @@ def eliminar_empleado(id_empleado, cursor, conexion):
 # * PATCH
 
 
-def cambiar_contrasenia_empleado(id_empleado, cursor, conexion):
+def actualizar_contrasenia_empleado(id_empleado, cursor, conexion):
     """Función PATCH para cambiar la contraseña de un empleado específico en la base de datos"""
     try:
         body = request.json

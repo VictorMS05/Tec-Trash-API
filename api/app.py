@@ -7,7 +7,7 @@ from config import diccionario_de_configuraciones
 # Se importan las funciones para manejar errores
 from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, tipo_de_medio_no_soportado, error_interno_del_servidor
 from views.cliente import consultar_clientes, insertar_cliente, actualizar_cliente, eliminar_cliente, insertar_direccion_cliente, eliminar_direccion_cliente, actualizar_contrasenia_cliente, iniciar_sesion_cliente
-from views.empleado import obtener_empleado, registrar_empleado, actualizar_empleado, eliminar_empleado, cambiar_contrasenia_empleado, iniciar_sesion_empleado
+from views.empleado import consultar_empleado, insertar_empleado, actualizar_empleado, eliminar_empleado, actualizar_contrasenia_empleado, iniciar_sesion_empleado
 from views.empresa import obtener_empresa, registrar_empresa, actualizar_empresa, eliminar_empresa, cambiar_contrasenia_empresa
 from views.desecho import obtener_desecho, registrar_desecho, actualizar_desecho, eliminar_desecho, asignar_recoleccion_entrega_desecho
 from views.recoleccion import obtener_recoleccion, registrar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion
@@ -104,25 +104,28 @@ def iniciar_sesion_1():
 
 @app.route('/empleado/<string:id_empleado>')
 def get_2(id_empleado):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla empleado"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    empleado"""
     cursor = conexion.connection.cursor()
-    return obtener_empleado(id_empleado, cursor)
+    return consultar_empleado(id_empleado, cursor)
 
 # * POST
 
 
 @app.route('/empleado', methods=['POST'])
 def post_2():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla empleado"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla 
+    empleado"""
     cursor = conexion.connection.cursor()
-    return registrar_empleado(cursor, conexion)
+    return insertar_empleado(cursor, conexion)
 
 # * PUT
 
 
 @app.route('/empleado/<string:id_empleado>', methods=['PUT'])
 def put_2(id_empleado):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla empleado"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla 
+    empleado"""
     cursor = conexion.connection.cursor()
     return actualizar_empleado(id_empleado, cursor, conexion)
 
@@ -131,7 +134,8 @@ def put_2(id_empleado):
 
 @app.route('/empleado/<string:id_empleado>', methods=['DELETE'])
 def delete_2(id_empleado):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla empleado"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la 
+    tabla empleado"""
     cursor = conexion.connection.cursor()
     return eliminar_empleado(id_empleado, cursor, conexion)
 
@@ -140,16 +144,18 @@ def delete_2(id_empleado):
 
 @app.route('/empleado/<string:id_empleado>', methods=['PATCH'])
 def patch_4(id_empleado):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla empleado"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
+    empleado"""
     cursor = conexion.connection.cursor()
-    return cambiar_contrasenia_empleado(id_empleado, cursor, conexion)
+    return actualizar_contrasenia_empleado(id_empleado, cursor, conexion)
 
 # * POST (Iniciar sesión)
 
 
 @app.route('/empleado/iniciar-sesion', methods=['POST'])
 def iniciar_sesion_2():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para iniciar sesión como empleado"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para iniciar 
+    sesión como empleado"""
     cursor = conexion.connection.cursor()
     return iniciar_sesion_empleado(cursor)
 
