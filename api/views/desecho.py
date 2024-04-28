@@ -194,7 +194,7 @@ def eliminar_desecho(id_desecho, cursor, conexion):
 # * PATCH
 
 
-def actualizar_desecho_recoleccion(id_desecho, cursor, conexion):
+def completar_registro_desecho(id_desecho, cursor, conexion):
     """Función PATCH para completar los datos de un desecho específico durante una recolección en la 
     base de datos"""
     try:
@@ -245,7 +245,7 @@ def actualizar_desecho_recoleccion(id_desecho, cursor, conexion):
                                     'details': str(e)}})
 
 
-def insertar_recoleccion_entrega_desecho(id_desecho, cursor, conexion):
+def asignar_recoleccion_entrega_desecho(id_desecho, cursor, conexion):
     """Función PATCH para asignar un desecho específico a una recolección o entrega en la base de 
     datos"""
     try:

@@ -9,8 +9,8 @@ from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada,
 from views.cliente import consultar_clientes, insertar_cliente, actualizar_cliente, eliminar_cliente, insertar_direccion_cliente, eliminar_direccion_cliente, actualizar_contrasenia_cliente, iniciar_sesion_cliente
 from views.empleado import consultar_empleado, insertar_empleado, actualizar_empleado, eliminar_empleado, actualizar_contrasenia_empleado, iniciar_sesion_empleado
 from views.empresa import consultar_empresa, insertar_empresa, actualizar_empresa, eliminar_empresa, actualizar_contrasenia_empresa, iniciar_sesion_empresa
-from views.desecho import consultar_desecho, insertar_desecho, actualizar_desecho, eliminar_desecho, actualizar_desecho_recoleccion, insertar_recoleccion_entrega_desecho
-from views.recoleccion import obtener_recoleccion, registrar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion
+from views.desecho import consultar_desecho, insertar_desecho, actualizar_desecho, eliminar_desecho, completar_registro_desecho, asignar_recoleccion_entrega_desecho
+from views.recoleccion import consultar_recoleccion, insertar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion
 from views.entrega import obtener_entrega, registrar_entrega, actualizar_entrega, eliminar_entrega, finalizar_entrega
 
 app = Flask(__name__)  # Se crea una instancia de Flask
@@ -271,7 +271,7 @@ def patch_4(id_desecho):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
     desecho"""
     cursor = conexion.connection.cursor()
-    return actualizar_desecho_recoleccion(id_desecho, cursor, conexion)
+    return completar_registro_desecho(id_desecho, cursor, conexion)
 
 
 @app.route('/desecho/<string:id_desecho>/asignar-recoleccion-entrega', methods=['PATCH'])
@@ -279,7 +279,7 @@ def patch_5(id_desecho):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
     desecho"""
     cursor = conexion.connection.cursor()
-    return insertar_recoleccion_entrega_desecho(id_desecho, cursor, conexion)
+    return asignar_recoleccion_entrega_desecho(id_desecho, cursor, conexion)
 
 #! RUTAS PARA LA TABLA RECOLECCIÓN
 
@@ -288,25 +288,28 @@ def patch_5(id_desecho):
 
 @app.route('/recoleccion/<string:id_recoleccion>')
 def get_5(id_recoleccion):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla recolección"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    recolección"""
     cursor = conexion.connection.cursor()
-    return obtener_recoleccion(id_recoleccion, cursor)
+    return consultar_recoleccion(id_recoleccion, cursor)
 
 # * POST
 
 
 @app.route('/recoleccion', methods=['POST'])
 def post_5():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla recolección"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla 
+    recolección"""
     cursor = conexion.connection.cursor()
-    return registrar_recoleccion(cursor, conexion)
+    return insertar_recoleccion(cursor, conexion)
 
 # * PUT
 
 
 @app.route('/recoleccion/<string:id_recoleccion>', methods=['PUT'])
 def put_5(id_recoleccion):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla recolección"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla 
+    recolección"""
     cursor = conexion.connection.cursor()
     return actualizar_recoleccion(id_recoleccion, cursor, conexion)
 
@@ -315,7 +318,8 @@ def put_5(id_recoleccion):
 
 @app.route('/recoleccion/<string:id_recoleccion>', methods=['DELETE'])
 def delete_5(id_recoleccion):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla recolección"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la 
+    tabla recolección"""
     cursor = conexion.connection.cursor()
     return eliminar_recoleccion(id_recoleccion, cursor, conexion)
 
@@ -324,7 +328,8 @@ def delete_5(id_recoleccion):
 
 @app.route('/recoleccion/<string:id_recoleccion>', methods=['PATCH'])
 def patch_6(id_recoleccion):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla recolección"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
+    recolección"""
     cursor = conexion.connection.cursor()
     return finalizar_recoleccion(id_recoleccion, cursor, conexion)
 

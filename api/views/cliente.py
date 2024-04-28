@@ -174,7 +174,7 @@ def actualizar_cliente(id_cliente, cursor, conexion):
             conexion.connection.commit()
             return jsonify({'success': True,
                             'status': 200, 
-                            'message': f'El cliente {telefono} se ha actualizado exitosamente', 
+                            'message': f'El cliente {id_cliente} se ha actualizado exitosamente', 
                             'data': {'nombre': body['nombre'].upper(), 
                                     'apellidoPaterno': body['apellidoPaterno'].upper(), 
                                     'apellidoMaterno': body['apellidoMaterno'].upper(), 

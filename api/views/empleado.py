@@ -159,7 +159,7 @@ def actualizar_empleado(id_empleado, cursor, conexion):
             conexion.connection.commit()
             return jsonify({'success': True,
                             'status': 200, 
-                            'message': f'El empleado {rfc} se ha actualizado exitosamente', 
+                            'message': f'El empleado {id_empleado} se ha actualizado exitosamente', 
                             'data': {'rfc': rfc,
                                         'nombre': body['nombre'].upper(), 
                                         'apellidoPaterno': body['apellidoPaterno'].upper(), 
