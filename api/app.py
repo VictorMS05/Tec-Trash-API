@@ -5,6 +5,7 @@ from flask_mysqldb import MySQL  # Se importa la clase MySQL de flask_mysqldb
 # Se importa el diccionario de configuraciones
 from config import diccionario_de_configuraciones
 # Se importan las funciones para manejar errores
+from flask_cors import CORS
 from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada, metodo_no_permitido, tipo_de_medio_no_soportado, error_interno_del_servidor
 from views.cliente import consultar_clientes, insertar_cliente, actualizar_cliente, eliminar_cliente, insertar_direccion_cliente, eliminar_direccion_cliente, actualizar_contrasenia_cliente, iniciar_sesion_cliente
 from views.empleado import consultar_empleado, insertar_empleado, actualizar_empleado, eliminar_empleado, actualizar_contrasenia_empleado, iniciar_sesion_empleado
@@ -15,6 +16,7 @@ from views.entrega import consultar_entrega, insertar_entrega, actualizar_entreg
 
 app = Flask(__name__)  # Se crea una instancia de Flask
 # Se crea una instancia de MySQL con la configuración de la aplicación
+CORS(app)
 conexion = MySQL(app)
 
 #! RUTAS PARA LA TABLA CLIENTE
