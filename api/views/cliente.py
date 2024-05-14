@@ -446,11 +446,14 @@ def iniciar_sesion_cliente(cursor):
         if cursor.fetchone()[0]:
             return jsonify({'success': True, 'status': 200, 'message': 'Inicio de sesión exitoso'})
         # Se retorna un objeto JSON con un error 404
-        return jsonify({'error': {'code': 404,
+                        
+        return jsonify({
+                        'error': {'code': 404,
                                     'type': 'Error del cliente',
                                     'message': 'Cliente no encontrado',
                                     'details': 'El cliente no existe o la contraseña es '
-                                                'incorrecta'}})
+                                                'incorrecta'}
+                        })
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
