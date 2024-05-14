@@ -63,6 +63,7 @@ def insertar_recoleccion(cursor, conexion):
                         'data': {'idEmpleado': body['idEmpleado'].upper(),
                                     'pesoFinal': body['pesoFinal'], 
                                     'costoFinal': body['costoFinal'], 
+                                    'estatus': 'PROGRAMADA',
                                     'fechaRegistro': datetime.now(), 
                                     'fechaProgramada': body['fechaProgramada']}})
     except KeyError as e:

@@ -12,7 +12,7 @@ from views.empleado import consultar_empleado, insertar_empleado, actualizar_emp
 from views.empresa import consultar_empresa, insertar_empresa, actualizar_empresa, eliminar_empresa, actualizar_contrasenia_empresa, iniciar_sesion_empresa
 from views.desecho import consultar_desecho, insertar_desecho, actualizar_desecho, eliminar_desecho, completar_registro_desecho, asignar_recoleccion_entrega_desecho
 from views.recoleccion import consultar_recoleccion, insertar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion
-from views.entrega import obtener_entrega, registrar_entrega, actualizar_entrega, eliminar_entrega, finalizar_entrega
+from views.entrega import consultar_entrega, insertar_entrega, actualizar_entrega, eliminar_entrega, finalizar_entrega
 
 app = Flask(__name__)  # Se crea una instancia de Flask
 # Se crea una instancia de MySQL con la configuración de la aplicación
@@ -342,25 +342,28 @@ def patch_6(id_recoleccion):
 
 @app.route('/entrega/<string:id_entrega>')
 def get_6(id_entrega):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla entrega"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    entrega"""
     cursor = conexion.connection.cursor()
-    return obtener_entrega(id_entrega, cursor)
+    return consultar_entrega(id_entrega, cursor)
 
 # * POST
 
 
 @app.route('/entrega', methods=['POST'])
 def post_6():
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla entrega"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método POST para la tabla 
+    entrega"""
     cursor = conexion.connection.cursor()
-    return registrar_entrega(cursor, conexion)
+    return insertar_entrega(cursor, conexion)
 
 # * PUT
 
 
 @app.route('/entrega/<string:id_entrega>', methods=['PUT'])
 def put_6(id_entrega):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla entrega"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PUT para la tabla 
+    entrega"""
     cursor = conexion.connection.cursor()
     return actualizar_entrega(id_entrega, cursor, conexion)
 
@@ -369,7 +372,8 @@ def put_6(id_entrega):
 
 @app.route('/entrega/<string:id_entrega>', methods=['DELETE'])
 def delete_6(id_entrega):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la tabla entrega"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método DELETE para la 
+    tabla entrega"""
     cursor = conexion.connection.cursor()
     return eliminar_entrega(id_entrega, cursor, conexion)
 
@@ -378,7 +382,8 @@ def delete_6(id_entrega):
 
 @app.route('/entrega/<string:id_entrega>', methods=['PATCH'])
 def patch_7(id_entrega):
-    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla entrega"""
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método PATCH para la tabla 
+    entrega"""
     cursor = conexion.connection.cursor()
     return finalizar_entrega(id_entrega, cursor, conexion)
 
