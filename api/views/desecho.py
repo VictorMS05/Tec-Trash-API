@@ -50,6 +50,23 @@ def consultar_desecho(id_desecho, cursor):
                                     'message': 'Error en la base de datos', 
                                     'details': str(e)}})
 
+def consultar_peso_total_estimado_desechos(cursor):
+    """Función GET para consultar el peso estimado de todos los desechos que no han sido 
+    recolectados de la base de datos"""
+    try:
+        cursor.execute('SELECT SUM(pesoEstimado) FROM desecho WHERE idRecoleccion IS NULL;')
+        peso_total_estimado = cursor.fetchone()[0]
+        return jsonify({'success': True,
+                        'status': 200, 
+                        'message': 'Consulta exitosa', 
+                        'data': {'pesoTotalEstimado': peso_total_estimado}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
+
 # * POST
 
 

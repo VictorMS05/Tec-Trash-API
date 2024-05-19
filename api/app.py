@@ -10,7 +10,7 @@ from errors.manejo_de_errores import solicitud_incorrecta, pagina_no_encontrada,
 from views.cliente import consultar_clientes, insertar_cliente, actualizar_cliente, eliminar_cliente, insertar_direccion_cliente, eliminar_direccion_cliente, actualizar_contrasenia_cliente, iniciar_sesion_cliente
 from views.empleado import consultar_empleado, insertar_empleado, actualizar_empleado, eliminar_empleado, actualizar_contrasenia_empleado, iniciar_sesion_empleado
 from views.empresa import consultar_empresa, insertar_empresa, actualizar_empresa, eliminar_empresa, actualizar_contrasenia_empresa, iniciar_sesion_empresa
-from views.desecho import consultar_desecho, insertar_desecho, actualizar_desecho, eliminar_desecho, completar_registro_desecho, asignar_recoleccion_entrega_desecho
+from views.desecho import consultar_desecho, consultar_peso_total_estimado_desechos, insertar_desecho, actualizar_desecho, eliminar_desecho, completar_registro_desecho, asignar_recoleccion_entrega_desecho
 from views.recoleccion import consultar_recoleccion, insertar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion
 from views.entrega import consultar_entrega, insertar_entrega, actualizar_entrega, eliminar_entrega, finalizar_entrega
 
@@ -235,6 +235,13 @@ def get_4(id_desecho):
     cursor = conexion.connection.cursor()
     return consultar_desecho(id_desecho, cursor)
 
+@app.route('/desecho/peso-total-estimado')
+def get_5():
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    desecho"""
+    cursor = conexion.connection.cursor()
+    return consultar_peso_total_estimado_desechos(cursor)
+
 # * POST
 
 
@@ -289,7 +296,7 @@ def patch_5(id_desecho):
 
 
 @app.route('/recoleccion/<string:id_recoleccion>')
-def get_5(id_recoleccion):
+def get_6(id_recoleccion):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
     recolección"""
     cursor = conexion.connection.cursor()
@@ -341,7 +348,7 @@ def patch_6(id_recoleccion):
 
 
 @app.route('/entrega/<string:id_entrega>')
-def get_6(id_entrega):
+def get_7(id_entrega):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
     entrega"""
     cursor = conexion.connection.cursor()
