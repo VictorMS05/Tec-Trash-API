@@ -142,7 +142,8 @@ def actualizar_empleado(id_empleado, cursor, conexion):
                             'apellidoMaterno = %s, fechaNacimiento = %s, nss = %s, telefono = %s, '
                             'correo = %s, esAdministrador = %s, contactoEmergenciaNombre = %s, '
                             'contactoEmergenciaApellidoP = %s, contactoEmergenciaApellidoM = %s, '
-                            'contactoEmergenciaParentesco = %s, contactoEmergenciaTelefono = %s ',
+                            'contactoEmergenciaParentesco = %s, contactoEmergenciaTelefono = %s '
+                            'WHERE idEmpleado = %s',
                             (body['nombre'].upper(), body['apellidoPaterno'].upper(),
                                 body['apellidoMaterno'].upper(), body['fechaNacimiento'],
                                 body['nss'], body['telefono'], body['correo'],
@@ -150,7 +151,7 @@ def actualizar_empleado(id_empleado, cursor, conexion):
                                 body['contactoEmergenciaApellidoP'].upper(),
                                 body['contactoEmergenciaApellidoM'].upper(),
                                 body['contactoEmergenciaParentesco'].upper(),
-                                body['contactoEmergenciaTelefono']))
+                                body['contactoEmergenciaTelefono'], id_empleado,))
             rfc = id_empleado
             if body['rfc'] != id_empleado and body['rfc'] != '':
                 cursor.execute('UPDATE empleado SET idEmpleado = %s WHERE idEmpleado = %s',
