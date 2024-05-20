@@ -15,7 +15,7 @@ def consultar_entrega(id_entrega, cursor):
     """Función GET para consultar una entrega específica o todas las entregas de la base de datos"""
     try:
         if id_entrega == 'todos':
-            cursor.execute('SELECT * FROM entrega')
+            cursor.execute('SELECT * FROM entrega ORDER BY fechaRegistro DESC')
         else:
             cursor.execute('SELECT * FROM entrega WHERE idEntrega = %s', (id_entrega,))
         entregas = cursor.fetchall()
@@ -237,6 +237,45 @@ def finalizar_entrega(id_entrega, cursor, conexion):
                                     'message': 'Entrega no encontrada', 
                                     'details': f'No se encontró la entrega {id_entrega} en la '
                                                 f'base de datos'}})
+    except KeyError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Petición inválida', 
+                                    'details': f'Falta la clave {str(e)} en el '
+                                                f'body de la petición'}})
+    except IntegrityError as e:
+        # Se retorna un objeto JSON con un error 400
+        return jsonify({'error': {'code': 400,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Error de integridad MySQL', 
+                                    'details': str(e)}})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
+
+def asignar_entrega_desecho(id_entrega, cursor, conexion):
+    """Función PATCH para asignar un desecho específico a una entrega en la base de datos"""
+    try:
+        cursor.execute('SELECT idEntrega FROM entrega WHERE idEntrega = %s', (id_entrega,))
+        if cursor.fetchone() is not None:
+            cursor.execute('UPDATE desecho SET idEntrega = %s WHERE idEntrega IS NULL ORDER BY '
+                            'fechaRegistro DESC', (id_entrega,))
+            conexion.connection.commit()
+            return jsonify({'success': True,
+                            'status': 200, 
+                            'message': f'Los desechos se han asignado a la entrega {id_entrega} '
+                                        f'exitosamente',
+                            'data': {'idEntrega': id_entrega}})
+        # Se retorna un objeto JSON con un error 404
+        return jsonify({'error': {'code': 404,
+                                    'type': 'Error del cliente', 
+                                    'message': 'Desecho no encontrado', 
+                                    'details': f'No se encontró la entrega {id_entrega} en la base '
+                                                f'de datos'}})
     except KeyError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,

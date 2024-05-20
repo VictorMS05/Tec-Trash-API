@@ -54,7 +54,8 @@ def consultar_peso_total_estimado_desechos(cursor):
     """Función GET para consultar el peso estimado de todos los desechos que no han sido 
     recolectados de la base de datos"""
     try:
-        cursor.execute('SELECT SUM(pesoEstimado) FROM desecho WHERE idRecoleccion IS NULL;')
+        cursor.execute('SELECT SUM(pesoEstimado) FROM desecho WHERE idRecoleccion IS NULL ORDER '
+                        'BY fechaRegistro DESC')
         peso_total_estimado = cursor.fetchone()[0]
         return jsonify({'success': True,
                         'status': 200, 
@@ -248,69 +249,6 @@ def completar_registro_desecho(id_desecho, cursor, conexion):
                                     'message': 'Petición inválida', 
                                     'details': f'Falta la clave {str(e)} en el body de la '
                                                 f'petición'}})
-    except IntegrityError as e:
-        # Se retorna un objeto JSON con un error 400
-        return jsonify({'error': {'code': 400,
-                                    'type': 'Error del cliente', 
-                                    'message': 'Error de integridad MySQL', 
-                                    'details': str(e)}})
-    except OperationalError as e:
-        # Se retorna un objeto JSON con un error 500
-        return jsonify({'error': {'code': 500,
-                                    'type': 'Error del servidor', 
-                                    'message': 'Error en la base de datos', 
-                                    'details': str(e)}})
-
-
-def asignar_recoleccion_entrega_desecho(id_desecho, cursor, conexion):
-    """Función PATCH para asignar un desecho específico a una recolección o entrega en la base de 
-    datos"""
-    try:
-        body = request.json
-        cursor.execute('SELECT idDesecho FROM desecho WHERE idDesecho = %s', (id_desecho,))
-        if cursor.fetchone() is not None:
-            if 'idRecoleccion' in body or 'estatusRecoleccion' in body:
-                cursor.execute('UPDATE desecho SET idRecoleccion = %s, estatusRecoleccion = %s '
-                                'WHERE idDesecho = %s', (body['idRecoleccion'],
-                                                            body['estatusRecoleccion'],
-                                                            id_desecho,))
-                conexion.connection.commit()
-                return jsonify({'success': True,
-                                'status': 200, 
-                                'message': f'El desecho {id_desecho} se ha asignado a una '
-                                            'recolección exitosamente', 
-                                'data': {'idDesecho': id_desecho,
-                                            'idRecoleccion': body['idRecoleccion'], 
-                                            'estatusRecoleccion': body['estatusRecoleccion']}})
-            if 'idEntrega' in body:
-                cursor.execute('UPDATE desecho SET idEntrega = %s WHERE idDesecho = %s',
-                                (body['idEntrega'], id_desecho,))
-                conexion.connection.commit()
-                return jsonify({'success': True,
-                                'status': 200, 
-                                'message': f'El desecho {id_desecho} se ha asignado a una entrega '
-                                            f'exitosamente',
-                                'data': {'idDesecho': id_desecho,
-                                            'idEntrega': body['idEntrega']}})
-            # Se retorna un objeto JSON con un error 400
-            return jsonify({'error': {'code': 400,
-                                        'type': 'Error del cliente', 
-                                        'message': 'Petición inválida', 
-                                        'details': 'No se especificó un campo válido para '
-                                                    'actualizar el desecho'}})
-        # Se retorna un objeto JSON con un error 404
-        return jsonify({'error': {'code': 404,
-                                    'type': 'Error del cliente', 
-                                    'message': 'Desecho no encontrado', 
-                                    'details': f'No se encontró el desecho {id_desecho} en la base '
-                                                f'de datos'}})
-    except KeyError as e:
-        # Se retorna un objeto JSON con un error 400
-        return jsonify({'error': {'code': 400,
-                                    'type': 'Error del cliente', 
-                                    'message': 'Petición inválida', 
-                                    'details': f'Falta la clave {str(e)} en el '
-                                                f'body de la petición'}})
     except IntegrityError as e:
         # Se retorna un objeto JSON con un error 400
         return jsonify({'error': {'code': 400,
