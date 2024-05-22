@@ -68,6 +68,42 @@ def consultar_costo_final_recoleccion(id_recoleccion, cursor):
                                 'message': 'Error en la base de datos', 
                                 'details': str(e)}})
 
+def consultar_desechos_recoleccion(id_recoleccion, cursor):
+    """Función GET para consultar los desechos de una recolección específica"""
+    try:
+        cursor.execute(f'SELECT * FROM desecho WHERE idRecoleccion = {id_recoleccion}')
+        desechos = cursor.fetchall()
+        diccionario = []
+        for registro in desechos:
+            arreglo = {
+                'idDesecho': registro[0],
+                'idCliente': registro[1],
+                'idRecoleccion': registro[2],
+                'idEntrega': registro[3],
+                'nombre': registro[4],
+                'modelo': registro[5],
+                'marca': registro[6],
+                'pesoEstimado': registro[7],
+                'pesoReal': registro[8],
+                'color': registro[9],
+                'estatusFuncional': registro[10],
+                'fechaRegistro': registro[11],
+                'fechaActualizacion': registro[12],
+                'pago': registro[13],
+                'estatusRecoleccion': registro[14]
+            }
+            diccionario.append(arreglo)
+        return jsonify({'success': True,
+                        'status': 200, 
+                        'message': 'Consulta exitosa', 
+                        'data': diccionario})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500,
+                                'type': 'Error del servidor', 
+                                'message': 'Error en la base de datos', 
+                                'details': str(e)}})
+
 # * POST
 
 

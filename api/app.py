@@ -11,7 +11,7 @@ from views.cliente import consultar_clientes, insertar_cliente, actualizar_clien
 from views.empleado import consultar_empleado, insertar_empleado, actualizar_empleado, eliminar_empleado, actualizar_contrasenia_empleado, iniciar_sesion_empleado
 from views.empresa import consultar_empresa, insertar_empresa, actualizar_empresa, eliminar_empresa, actualizar_contrasenia_empresa, iniciar_sesion_empresa
 from views.desecho import consultar_desecho, consultar_peso_total_estimado_desechos, insertar_desecho, actualizar_desecho, eliminar_desecho, completar_registro_desecho
-from views.recoleccion import consultar_recoleccion, consultar_costo_final_recoleccion, insertar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion, asignar_recoleccion_desecho
+from views.recoleccion import consultar_recoleccion, consultar_costo_final_recoleccion, consultar_desechos_recoleccion, insertar_recoleccion, actualizar_recoleccion, eliminar_recoleccion, finalizar_recoleccion, asignar_recoleccion_desecho
 from views.entrega import consultar_entrega, insertar_entrega, actualizar_entrega, eliminar_entrega, finalizar_entrega, asignar_entrega_desecho
 
 app = Flask(__name__)  # Se crea una instancia de Flask
@@ -301,6 +301,13 @@ def get_7(id_recoleccion):
     cursor = conexion.connection.cursor()
     return consultar_costo_final_recoleccion(id_recoleccion, cursor)
 
+@app.route('/recoleccion/<string:id_recoleccion>/desechos')
+def get_8(id_recoleccion):
+    """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
+    recolección"""
+    cursor = conexion.connection.cursor()
+    return consultar_desechos_recoleccion(id_recoleccion, cursor)
+
 # * POST
 
 
@@ -355,7 +362,7 @@ def patch_6(id_recoleccion):
 
 
 @app.route('/entrega/<string:id_entrega>')
-def get_8(id_entrega):
+def get_9(id_entrega):
     """Función para ejecutar la conexión a la base de datos y ejecutar el método GET para la tabla 
     entrega"""
     cursor = conexion.connection.cursor()
