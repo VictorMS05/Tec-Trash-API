@@ -71,8 +71,8 @@ def consultar_costo_final_recoleccion(id_recoleccion, cursor):
 def consultar_desechos_recoleccion(id_recoleccion, cursor):
     """Función GET para consultar los desechos de una recolección específica"""
     try:
-        cursor.execute(f'SELECT * FROM desecho WHERE idRecoleccion = {id_recoleccion} AND pago != '
-                        '0')
+        cursor.execute(f'SELECT * FROM desecho WHERE idRecoleccion = {id_recoleccion} AND pago IS '
+                        'NOT NULL')
         desechos = cursor.fetchall()
         diccionario = []
         for registro in desechos:
