@@ -71,26 +71,18 @@ def consultar_costo_final_recoleccion(id_recoleccion, cursor):
 def consultar_desechos_recoleccion(id_recoleccion, cursor):
     """Función GET para consultar los desechos de una recolección específica"""
     try:
-        cursor.execute(f'SELECT * FROM desecho WHERE idRecoleccion = {id_recoleccion}')
+        cursor.execute(f'SELECT * FROM desecho WHERE idRecoleccion = {id_recoleccion} AND pago != '
+                        '0')
         desechos = cursor.fetchall()
         diccionario = []
         for registro in desechos:
             arreglo = {
                 'idDesecho': registro[0],
                 'idCliente': registro[1],
-                'idRecoleccion': registro[2],
-                'idEntrega': registro[3],
                 'nombre': registro[4],
                 'modelo': registro[5],
                 'marca': registro[6],
-                'pesoEstimado': registro[7],
-                'pesoReal': registro[8],
-                'color': registro[9],
-                'estatusFuncional': registro[10],
-                'fechaRegistro': registro[11],
-                'fechaActualizacion': registro[12],
-                'pago': registro[13],
-                'estatusRecoleccion': registro[14]
+                'pesoEstimado': registro[7]
             }
             diccionario.append(arreglo)
         return jsonify({'success': True,
@@ -324,15 +316,17 @@ def asignar_recoleccion_desecho(id_recoleccion, cursor, conexion):
                         (id_recoleccion,))
         if cursor.fetchone() is not None:
             cursor.execute('UPDATE desecho SET idRecoleccion = %s, estatusRecoleccion = '
-                            '"PROGRAMADA" WHERE idRecoleccion IS NULL ORDER BY fechaRegistro DESC',
+                            '"PROGRAMADA", fechaActualizacion = CURRENT_TIMESTAMP() WHERE '
+                            'idRecoleccion IS NULL ORDER BY fechaRegistro DESC',
                             (id_recoleccion,))
             conexion.connection.commit()
             return jsonify({'success': True,
                             'status': 200, 
                             'message': f'Los desechos se han asignado a la recolección '
-                                        f'{id_recoleccion} exitosamente', 
+                                        f'{id_recoleccion} exitosamente',
                             'data': {'idRecoleccion': id_recoleccion,
-                                        'estatusRecoleccion': 'PROGRAMADA'}})
+                                        'estatusRecoleccion': 'PROGRAMADA',
+                                        'fechaActualizacion': datetime.now()}})
         # Se retorna un objeto JSON con un error 404
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 

@@ -68,6 +68,43 @@ def consultar_peso_total_estimado_desechos(cursor):
                                     'message': 'Error en la base de datos', 
                                     'details': str(e)}})
 
+def consultar_inventario(cursor):
+    """Función GET para consultar el inventario de desechos de la base de datos"""
+    try:
+        cursor.execute('SELECT * FROM desecho WHERE idRecoleccion IS NOT NULL AND idEntrega IS '
+                        'NULL ORDER BY fechaRegistro DESC')
+        desechos_sin_recoleccion = cursor.fetchall()
+        diccionario = []
+        for registro in desechos_sin_recoleccion:
+            arreglo = {
+                'idDesecho': registro[0],
+                'idCliente': registro[1],
+                'idRecoleccion': registro[2],
+                'idEntrega': registro[3],
+                'nombre': registro[4],
+                'modelo': registro[5],
+                'marca': registro[6],
+                'pesoEstimado': registro[7],
+                'pesoReal': registro[8],
+                'color': registro[9],
+                'estatusFuncional': registro[10],
+                'fechaRegistro': registro[11],
+                'fechaActualizacion': registro[12],
+                'pago': registro[13],
+                'estatusRecoleccion': registro[14]
+            }
+            diccionario.append(arreglo)
+        return jsonify({'success': True,
+                        'status': 200, 
+                        'message': 'Consulta exitosa', 
+                        'data': diccionario})
+    except OperationalError as e:
+        # Se retorna un objeto JSON con un error 500
+        return jsonify({'error': {'code': 500,
+                                    'type': 'Error del servidor', 
+                                    'message': 'Error en la base de datos', 
+                                    'details': str(e)}})
+
 # * POST
 
 
