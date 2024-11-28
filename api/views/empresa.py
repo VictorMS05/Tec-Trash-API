@@ -303,7 +303,7 @@ def iniciar_sesion_empresa(cursor):
             return jsonify({'success': True,
                             'status': 200,
                             'message': 'Inicio de sesión exitoso',
-                            'data': cursor.fetchone()[0]})
+                            'data': cursor.fetchone()})
         # Se retorna un objeto JSON con un error 404
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 
