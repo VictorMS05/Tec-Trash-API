@@ -306,7 +306,12 @@ def iniciar_sesion_empleado(cursor):
         cursor.execute('SELECT COUNT(idEmpleado) > 0 FROM empleado WHERE correo = %s AND '
                         'contrasenia = MD5(%s)', (body['correo'], body['contrasenia']))
         if cursor.fetchone()[0]:
-            return jsonify({'success': True, 'status': 200, 'message': 'Inicio de sesión exitoso'})
+            cursor.execute('SELECT idEmpleado, nombre FROM empleado WHERE correo = %s',
+                            (body['correo'],))
+            return jsonify({'success': True,
+                            'status': 200, 
+                            'message': 'Inicio de sesión exitoso',
+                            'data': cursor.fetchone()[0]})
         # Se retorna un objeto JSON con un error 404
         return jsonify({'error': {'code': 404,
                                     'type': 'Error del cliente', 
