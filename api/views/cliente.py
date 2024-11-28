@@ -444,7 +444,7 @@ def iniciar_sesion_cliente(cursor):
         cursor.execute('SELECT COUNT(idCliente) > 0 FROM cliente WHERE correo = %s AND contrasenia '
                         '= MD5(%s)', (body['correo'], body['contrasenia']))
         if cursor.fetchone()[0]:
-            cursor.execute('SELECT idCliente, nombre FROM cliente WHERE correo = %s',
+            cursor.execute('SELECT idCliente, nombre, sexo FROM cliente WHERE correo = %s',
                             (body['correo'],))
             return jsonify({'success': True,
                             'status': 200, 
